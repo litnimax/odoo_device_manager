@@ -1,0 +1,43 @@
+version: '3'
+
+volumes:
+  supervisor_odoo_data:
+  supervisor_odoo_db:
+
+services:
+    broker:
+      image: woahbase/alpine-mosquitto
+      container_name: broker
+      ports:
+        - "1883:1883"
+      volumes:
+        - ./broker/mosquitto.conf:/mosquitto/config/mosquitto.conf
+
+    odoo:
+      image: odoo:10.0
+      container_name: odoo
+      depends_on:
+        - db
+      ports:
+        - "8069:8069"
+      volumes:
+        - "supervisor_odoo_data:/var/lib/odoo"
+        - "./odoo_addons:/mnt/extra-addons"
+      command: ["odoo", "--db-filter=test", "--database=test", "--log-level=debug_rpc"]
+
+    db:
+      image: postgres:9-alpine
+      container_name: db
+      environment:
+        - POSTGRES_PASSWORD=odoo
+        - POSTGRES_USER=odoo
+      volumes:
+        - supervisor_odoo_db:/var/lib/db
+
+    http_bridge:
+      image: litnimax/mqttrpc_http_bridge
+      container_name: http_bridge
+      environment:
+        - HTTP_URL=http://odoo:8069/jsonrpc
+        - MQTT_URL=mqtt://broker
+        - CLIENT_UID=odoo
