@@ -7,6 +7,7 @@ import json
 import logging
 import os
 import sys
+import yaml
 from aiodocker import Docker
 from mqttrpc import MQTTRPC, OdooRPCProxy, dispatcher
 from tinyrpc.exc import RPCError
@@ -16,6 +17,7 @@ logging.getLogger('aiohttp-json-rpc.client').setLevel(level=logging.DEBUG)
 
 REGISTER_URL = 'http://localhost:8069/device_manager/register?db=test'
 REGISTER_TOKEN = 'test'
+ODOO_DB = 'test'
 
 class Supervisor(MQTTRPC):
     version = '1.0.0'
@@ -34,7 +36,13 @@ class Supervisor(MQTTRPC):
             if  not await self.register():
                 logger.error('Cannot register device')
                 await self.stop()
-        #uid = await self.odoo.login(ODOO_DB, ODOO_USERNAME, ODOO_PASSWORD)
+        uid = await self.odoo.login(ODOO_DB, 'admin', 'admin') #self.settings['username'],
+                                             #self.settings['password'])
+        res = await self.odoo.execute(
+                                            'device_manager.application',
+                                            'get_application_for_device', self.client_uid)
+        logger.debug(res[0])
+        open('docker-compose.supervisor.yml', 'w').write(res[0])
 
 
     # === Agent exit ===

@@ -11,6 +11,9 @@
             <field name="model">device_manager.application</field>
             <field name="arch" type="xml">
                 <form string="Application Form">
+                    <header>
+                        <button name="build" type="object" string="Build"/>
+                    </header>
                     <sheet>
                         <group>
                             <group>
@@ -275,8 +278,23 @@
                 <form string="Service Form">
                     <sheet>
                         <group>
-                            <field name="name"/>
-                            <field name="status"/>
+                            <group>
+                                <field name="name"/>
+                                <field name="image"/>
+                                <field name="tag"/>
+                            </group>
+                            <group>
+                                <field name="depends_on" widget="many2many_tags"/>
+                                <field name="restart"/>
+                            </group>
+                        </group>
+                        <group>
+                            <field name="environment">
+                                <tree>
+                                    <field name="name"/>
+                                    <field name="value"/>
+                                </tree>
+                            </field>
                         </group>
                     </sheet>
                 </form>
@@ -290,7 +308,7 @@
             <field name="arch" type="xml">
                 <tree string="Service Tree">
                     <field name="name"/>
-                    <field name="status"/>
+                    <field name="image"/>
                 </tree>
             </field>
         </record>

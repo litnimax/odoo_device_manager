@@ -3,14 +3,6 @@
 from odoo import models, fields, api
 
 
-class Application(models.Model):
-    _name = 'device_manager.application'
-
-    name = fields.Char(required=True)
-    token = fields.Char(required=True)
-    services = fields.Many2many(comodel_name='device_manager.service')
-
-
 
 class Service(models.Model):
     _name = 'device_manager.service'
@@ -25,11 +17,9 @@ class Service(models.Model):
     restart = fields.Selection(selection=(
                                         ('no', 'No'), ('always', 'Always'),
                                         ('on-failure', 'On Failure'),
-                                        ('unless-stopped', 'Unless-stopped')))
-    status = fields.Selection(selection=(
-                                         ('downloaded', 'Downloaded'),
-                                         ('building', 'Building'))
-    )
+                                        ('unless-stopped', 'Unless-stopped')),
+                                default='on-failure')
+
 
 
 
