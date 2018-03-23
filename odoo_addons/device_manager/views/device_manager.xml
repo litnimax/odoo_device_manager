@@ -13,8 +13,13 @@
                 <form string="Application Form">
                     <sheet>
                         <group>
-                            <field name="name"/>
-                            <field name="token"/>
+                            <group>
+                                <field name="name"/>
+                                <field name="token"/>
+                            </group>
+                            <group>
+                                <field name="services" widget="many2many_tags"/>
+                            </group>
                         </group>
                     </sheet>
                 </form>
@@ -123,34 +128,30 @@
                     <sheet>
                         <notebook>
                             <page string="Device data">
-                                <label for="device_uid" string="Device UID"/>
-                                <field name="device_uid"/>
-                                <label for="application" string="Application"/>
-                                <field name="application"/>
-                                <br/>
-                                <label for="state" string="State"/>
-                                <field name="state"/>
-                                <label for="username" string="Username"/>
-                                <field name="username"/>
-                                <label for="password" string="Password"/>
-                                <field name="password"/>
-                                <label for="last_online" string="Last online"/>
-                                <field name="last_online"/>
-                                <br/>
-                                <label for="host_os_version" string="Host OS version"/>
-                                <field name="host_os_version"/>
-                                <label for="supervisor_version" string="Supervisor version"/>
-                                <field name="supervisor_version"/>
-                                <label for="ip_address" string="IP address"/>
-                                <field name="ip_address"/>
-                                <label for="commit" string="Last commit"/>
-                                <field name="commit"/>
-                                <label for="notes" string="Notes"/>
-                                <field name="notes"/>
+                                <group>
+                                    <group>
+                                        <field name="device_uid"/>
+                                        <field name="application"/>
+                                        <field name="state"/>
+                                        <field name="username"/>
+                                        <field name="password"/>
+                                        <field name="notes"/>
+                                    </group>
+                                    <group>
+                                        <field name="last_online"/>
+                                        <field name="host_os_version"/>
+                                        <field name="supervisor_version"/>
+                                        <field name="ip_address"/>
+                                        <field name="commit"/>
+                                    </group>
+                                </group>
+                                <group>
+                                    <field name="notes"/>
+                                </group>
                             </page>
                             <page string="Variables">
                                 <field name="variables">
-                                    <tree string="Registered variables">
+                                    <tree string="Environment">
                                         <field name="name"/>
                                         <field name="value"/>
                                     </tree>

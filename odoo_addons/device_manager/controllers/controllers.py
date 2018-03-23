@@ -29,6 +29,7 @@ class Container(http.Controller):
                 raise Warning('Device {} already registered to app {}'.format(
                     device_uid, device.application.name))
             else:
+                device.last_online = fields.Datetime.now()
                 logger.debug(
                     'Device {} is already registered'.format(device_uid))
         else:
