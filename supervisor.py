@@ -14,11 +14,6 @@ from tinyrpc.exc import RPCError
 logger = logging.getLogger(__name__)
 logging.getLogger('aiohttp-json-rpc.client').setLevel(level=logging.DEBUG)
 
-ODOO_DB = 'test'
-ODOO_USERNAME = 'admin'
-ODOO_PASSWORD = 'admin'
-REGISTER_HOST = 'localhost'
-REGISTER_PORT = 8069
 REGISTER_URL = 'http://localhost:8069/device_manager/register?db=test'
 REGISTER_TOKEN = 'test'
 
