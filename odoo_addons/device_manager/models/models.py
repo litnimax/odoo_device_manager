@@ -2,6 +2,15 @@
 
 from odoo import models, fields, api
 
+
+class Application(models.Model):
+    _name = 'device_manager.application'
+
+    name = fields.Char(required=True)
+    token = fields.Char(required=True)
+
+
+
 class Image(models.Model):
      _name = 'device_manager.image'
 
@@ -13,10 +22,13 @@ class Device(models.Model):
     _rec_name = 'device_uid'
 
     device_uid = fields.Char(required=True, index=True)
+    application = fields.Many2one(comodel_name='device_manager.application')
     state = fields.Selection(selection=(
                                          ('online', 'Online'),
                                          ('offline', 'Offline'))
     )
+    username = fields.Char()
+    password = fields.Char()
     last_online = fields.Datetime()
     host_os_version = fields.Char()
     supervisor_version = fields.Char()
