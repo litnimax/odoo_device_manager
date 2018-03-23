@@ -1,0 +1,342 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <data>
+
+
+        <!--Applications-->
+
+        <!--Application form view-->
+        <record model="ir.ui.view" id="application_form_view">
+            <field name="name">application.form</field>
+            <field name="model">device_manager.application</field>
+            <field name="arch" type="xml">
+                <form string="Application Form">
+                    <sheet>
+                        <group>
+                            <field name="name"/>
+                            <field name="token"/>
+                        </group>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <!--Application tree view-->
+        <record model="ir.ui.view" id="application_tree_view">
+            <field name="name">application.tree</field>
+            <field name="model">device_manager.application</field>
+            <field name="arch" type="xml">
+                <tree string="Application Tree">
+                    <field name="name"/>
+                    <field name="token"/>
+                </tree>
+            </field>
+        </record>
+
+        <!--Application search view-->
+        <record model="ir.ui.view" id="application_search_view">
+            <field name="name">application.search</field>
+            <field name="model">device_manager.application</field>
+            <field name="arch" type="xml">
+                <search>
+                    <field name="name"/>
+                    <field name="token"/>
+                </search>
+            </field>
+        </record>
+
+        <!--Application-->
+        <record model="ir.actions.act_window" id="application_list_action">
+            <field name="name">Applications</field>
+            <field name="res_model">device_manager.application</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form</field>
+            <field name="help" type="html">
+                <p class="oe_view_nocontent_create">
+                    Create the first application
+                </p>
+            </field>
+        </record>
+
+
+        <!--Images-->
+
+        <!--Image form view-->
+        <record model="ir.ui.view" id="image_form_view">
+            <field name="name">image.form</field>
+            <field name="model">device_manager.image</field>
+            <field name="arch" type="xml">
+                <form string="Image Form">
+                    <sheet>
+                        <group>
+                            <field name="name"/>
+                        </group>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <!--Image tree view-->
+        <record model="ir.ui.view" id="image_tree_view">
+            <field name="name">image.tree</field>
+            <field name="model">device_manager.image</field>
+            <field name="arch" type="xml">
+                <tree string="Image Tree">
+                    <field name="name"/>
+                </tree>
+            </field>
+        </record>
+
+        <!--Image search view-->
+        <record model="ir.ui.view" id="image_search_view">
+            <field name="name">image.search</field>
+            <field name="model">device_manager.image</field>
+            <field name="arch" type="xml">
+                <search>
+                    <field name="name"/>
+                </search>
+            </field>
+        </record>
+
+        <!--Image-->
+        <record model="ir.actions.act_window" id="image_list_action">
+            <field name="name">Images</field>
+            <field name="res_model">device_manager.image</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form</field>
+            <field name="help" type="html">
+                <p class="oe_view_nocontent_create">
+                    Create the first image
+                </p>
+            </field>
+        </record>
+
+
+        <!--Devices-->
+
+        <!--Device form view-->
+        <record model="ir.ui.view" id="device_form_view">
+            <field name="name">device.form</field>
+            <field name="model">device_manager.device</field>
+            <field name="arch" type="xml">
+                <form string="Device Form">
+                    <sheet>
+                        <notebook>
+                            <page string="Device data">
+                                <label for="device_uid" string="Device UID"/>
+                                <field name="device_uid"/>
+                                <label for="application" string="Application"/>
+                                <field name="application"/>
+                                <br/>
+                                <label for="state" string="State"/>
+                                <field name="state"/>
+                                <label for="username" string="Username"/>
+                                <field name="username"/>
+                                <label for="password" string="Password"/>
+                                <field name="password"/>
+                                <label for="last_online" string="Last online"/>
+                                <field name="last_online"/>
+                                <br/>
+                                <label for="host_os_version" string="Host OS version"/>
+                                <field name="host_os_version"/>
+                                <label for="supervisor_version" string="Supervisor version"/>
+                                <field name="supervisor_version"/>
+                                <label for="ip_address" string="IP address"/>
+                                <field name="ip_address"/>
+                                <label for="commit" string="Last commit"/>
+                                <field name="commit"/>
+                                <label for="notes" string="Notes"/>
+                                <field name="notes"/>
+                            </page>
+                            <page string="Variables">
+                                <field name="variables">
+                                    <tree string="Registered variables">
+                                        <field name="name"/>
+                                        <field name="value"/>
+                                    </tree>
+                                </field>
+                            </page>
+                        </notebook>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <!--Device tree view-->
+        <record model="ir.ui.view" id="device_tree_view">
+            <field name="name">device.tree</field>
+            <field name="model">device_manager.device</field>
+            <field name="arch" type="xml">
+                <tree string="Device Tree">
+                    <field name="device_uid"/>
+                    <field name="application"/>
+                    <field name="state"/>
+                    <field name="username"/>
+                    <field name="last_online"/>
+                    <field name="host_os_version"/>
+                    <field name="supervisor_version"/>
+                    <field name="ip_address"/>
+                    <field name="commit"/>
+                </tree>
+            </field>
+        </record>
+
+        <!--Device search view-->
+        <record model="ir.ui.view" id="device_search_view">
+            <field name="name">device.search</field>
+            <field name="model">device_manager.device</field>
+            <field name="arch" type="xml">
+                <search>
+                    <field name="device_uid"/>
+                    <field name="application"/>
+                    <field name="username"/>
+                    <field name="notes"/>
+                </search>
+            </field>
+        </record>
+
+        <!--Device-->
+        <record model="ir.actions.act_window" id="device_list_action">
+            <field name="name">Devices</field>
+            <field name="res_model">device_manager.device</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form</field>
+            <field name="help" type="html">
+                <p class="oe_view_nocontent_create">
+                    Create the first device
+                </p>
+            </field>
+        </record>
+
+
+        <!--Variables-->
+
+        <!--Variable form view-->
+        <record model="ir.ui.view" id="variable_form_view">
+            <field name="name">variable.form</field>
+            <field name="model">device_manager.variable</field>
+            <field name="arch" type="xml">
+                <form string="Variable Form">
+                    <sheet>
+                        <group>
+                            <field name="name"/>
+                            <field name="value"/>
+                        </group>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <!--Variable tree view-->
+        <record model="ir.ui.view" id="variable_tree_view">
+            <field name="name">variable.tree</field>
+            <field name="model">device_manager.variable</field>
+            <field name="arch" type="xml">
+                <tree string="Variable Tree">
+                    <field name="name"/>
+                    <field name="value"/>
+                </tree>
+            </field>
+        </record>
+
+        <!--Variable search view-->
+        <record model="ir.ui.view" id="variable_search_view">
+            <field name="name">variable.search</field>
+            <field name="model">device_manager.variable</field>
+            <field name="arch" type="xml">
+                <search>
+                    <field name="name"/>
+                </search>
+            </field>
+        </record>
+
+        <!--Variable-->
+        <record model="ir.actions.act_window" id="variable_list_action">
+            <field name="name">Variables</field>
+            <field name="res_model">device_manager.variable</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form</field>
+            <field name="help" type="html">
+                <p class="oe_view_nocontent_create">
+                    Create the first variable
+                </p>
+            </field>
+        </record>
+
+
+        <!--Services-->
+
+        <!--Service form view-->
+        <record model="ir.ui.view" id="service_form_view">
+            <field name="name">service.form</field>
+            <field name="model">device_manager.service</field>
+            <field name="arch" type="xml">
+                <form string="Service Form">
+                    <sheet>
+                        <group>
+                            <field name="name"/>
+                            <field name="status"/>
+                        </group>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <!--Service tree view-->
+        <record model="ir.ui.view" id="service_tree_view">
+            <field name="name">service.tree</field>
+            <field name="model">device_manager.service</field>
+            <field name="arch" type="xml">
+                <tree string="Service Tree">
+                    <field name="name"/>
+                    <field name="status"/>
+                </tree>
+            </field>
+        </record>
+
+        <!--Service search view-->
+        <record model="ir.ui.view" id="service_search_view">
+            <field name="name">service.search</field>
+            <field name="model">device_manager.service</field>
+            <field name="arch" type="xml">
+                <search>
+                    <field name="name"/>
+                </search>
+            </field>
+        </record>
+
+        <!--Service-->
+        <record model="ir.actions.act_window" id="service_list_action">
+            <field name="name">Services</field>
+            <field name="res_model">device_manager.service</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form</field>
+            <field name="help" type="html">
+                <p class="oe_view_nocontent_create">
+                    Create the first service
+                </p>
+            </field>
+        </record>
+
+
+        <!--Menu in header-->
+        <menuitem id="main_device_manager_menu" name="Device Manager"/>
+        <!--Main menu item on the left panel-->
+        <menuitem id="device_manager_menu" name="Device Manager" parent="main_device_manager_menu"/>
+        <!--Applications menu-->
+        <menuitem id="application_menu" name="Applications" parent="device_manager_menu"
+                  action="application_list_action"/>
+        <!--Images menu-->
+        <menuitem id="image_menu" name="Images" parent="device_manager_menu"
+                  action="image_list_action"/>
+        <!--Devices menu-->
+        <menuitem id="device_menu" name="Devices" parent="device_manager_menu"
+                  action="device_list_action"/>
+        <!--Variables menu-->
+        <menuitem id="variable_menu" name="Variables" parent="device_manager_menu"
+                  action="variable_list_action"/>
+        <!--Services menu-->
+        <menuitem id="service_menu" name="Services" parent="device_manager_menu"
+                  action="service_list_action"/>
+    </data>
+</odoo>
