@@ -21,13 +21,14 @@
 
     # any module necessary for this one to work correctly
     'depends': ['base'],
-
+    'application': True,
     # always loaded
     'data': [
         # 'security/ir.model.access.csv',
-        #'views/views.xml',
-        'views/templates.xml',
+        #'views/templates.xml',
         'views/device_manager.xml',
+        'views/device.xml',
+        'views/views.xml',        
     ],
     # only loaded in demonstration mode
     'demo': [

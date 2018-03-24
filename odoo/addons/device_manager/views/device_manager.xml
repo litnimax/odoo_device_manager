@@ -11,9 +11,6 @@
             <field name="model">device_manager.application</field>
             <field name="arch" type="xml">
                 <form string="Application Form">
-                    <header>
-                        <button name="build" type="object" string="Build"/>
-                    </header>
                     <sheet>
                         <group>
                             <group>
@@ -120,98 +117,6 @@
         </record>
 
 
-        <!--Devices-->
-
-        <!--Device form view-->
-        <record model="ir.ui.view" id="device_form_view">
-            <field name="name">device.form</field>
-            <field name="model">device_manager.device</field>
-            <field name="arch" type="xml">
-                <form string="Device Form">
-                    <sheet>
-                        <notebook>
-                            <page string="Device data">
-                                <group>
-                                    <group>
-                                        <field name="device_uid"/>
-                                        <field name="application"/>
-                                        <field name="state"/>
-                                        <field name="username"/>
-                                        <field name="password"/>
-                                        <field name="notes"/>
-                                    </group>
-                                    <group>
-                                        <field name="last_online"/>
-                                        <field name="host_os_version"/>
-                                        <field name="supervisor_version"/>
-                                        <field name="ip_address"/>
-                                        <field name="commit"/>
-                                    </group>
-                                </group>
-                                <group>
-                                    <field name="notes"/>
-                                </group>
-                            </page>
-                            <page string="Variables">
-                                <field name="variables">
-                                    <tree string="Environment">
-                                        <field name="name"/>
-                                        <field name="value"/>
-                                    </tree>
-                                </field>
-                            </page>
-                        </notebook>
-                    </sheet>
-                </form>
-            </field>
-        </record>
-
-        <!--Device tree view-->
-        <record model="ir.ui.view" id="device_tree_view">
-            <field name="name">device.tree</field>
-            <field name="model">device_manager.device</field>
-            <field name="arch" type="xml">
-                <tree string="Device Tree">
-                    <field name="device_uid"/>
-                    <field name="application"/>
-                    <field name="state"/>
-                    <field name="username"/>
-                    <field name="last_online"/>
-                    <field name="host_os_version"/>
-                    <field name="supervisor_version"/>
-                    <field name="ip_address"/>
-                    <field name="commit"/>
-                </tree>
-            </field>
-        </record>
-
-        <!--Device search view-->
-        <record model="ir.ui.view" id="device_search_view">
-            <field name="name">device.search</field>
-            <field name="model">device_manager.device</field>
-            <field name="arch" type="xml">
-                <search>
-                    <field name="device_uid"/>
-                    <field name="application"/>
-                    <field name="username"/>
-                    <field name="notes"/>
-                </search>
-            </field>
-        </record>
-
-        <!--Device-->
-        <record model="ir.actions.act_window" id="device_list_action">
-            <field name="name">Devices</field>
-            <field name="res_model">device_manager.device</field>
-            <field name="view_type">form</field>
-            <field name="view_mode">tree,form</field>
-            <field name="help" type="html">
-                <p class="oe_view_nocontent_create">
-                    Create the first device
-                </p>
-            </field>
-        </record>
-
 
         <!--Variables-->
 
@@ -284,6 +189,7 @@
                                 <field name="tag"/>
                             </group>
                             <group>
+                                <field name="cmd"/>
                                 <field name="depends_on" widget="many2many_tags"/>
                                 <field name="restart"/>
                             </group>
@@ -337,25 +243,5 @@
             </field>
         </record>
 
-
-        <!--Menu in header-->
-        <menuitem id="main_device_manager_menu" name="Device Manager"/>
-        <!--Main menu item on the left panel-->
-        <menuitem id="device_manager_menu" name="Device Manager" parent="main_device_manager_menu"/>
-        <!--Applications menu-->
-        <menuitem id="application_menu" name="Applications" parent="device_manager_menu"
-                  action="application_list_action"/>
-        <!--Images menu-->
-        <menuitem id="image_menu" name="Images" parent="device_manager_menu"
-                  action="image_list_action"/>
-        <!--Devices menu-->
-        <menuitem id="device_menu" name="Devices" parent="device_manager_menu"
-                  action="device_list_action"/>
-        <!--Variables menu-->
-        <menuitem id="variable_menu" name="Variables" parent="device_manager_menu"
-                  action="variable_list_action"/>
-        <!--Services menu-->
-        <menuitem id="service_menu" name="Services" parent="device_manager_menu"
-                  action="service_list_action"/>
     </data>
 </odoo>

@@ -46,5 +46,9 @@ class Container(http.Controller):
             logger.info(
                 'Created device {} for app {}'.format(device_uid, app.name))
         
-        return {'username': device.username, 'password': device.password}
+        return {
+            'device_id': device.id,
+            'username': device.username,
+            'password': device.password
+        }
 

@@ -3,6 +3,7 @@ import aiofiles
 import aiohttp
 import asyncio
 import aiodocker
+from aiodocker.exceptions import DockerError
 import json
 import logging
 import os
@@ -11,6 +12,7 @@ import yaml
 from aiodocker import Docker
 from mqttrpc import MQTTRPC, OdooRPCProxy, dispatcher
 from tinyrpc.exc import RPCError
+
 
 logger = logging.getLogger(__name__)
 logging.getLogger('aiohttp-json-rpc.client').setLevel(level=logging.DEBUG)
@@ -38,9 +40,13 @@ class Supervisor(MQTTRPC):
                 logger.error('Cannot register device')
                 await self.stop()
         # Init odoo connector
-        uid = await self.odoo.login(ODOO_DB, 'admin', 'admin') #self.settings['username'],
-                                             #self.settings['password'])
-        await self.application_load()        
+        try:
+            uid = await self.odoo.login(ODOO_DB, 'admin', 'admin') #self.settings['username'],
+                                                 #self.settings['password'])
+            if await self.application_load():
+                await self._application_start()                
+        except RPCError as e:
+            logger.error(e)
 
 
     async def application_load(self):
@@ -54,7 +60,56 @@ class Supervisor(MQTTRPC):
             logger.info('Application with {} service(s) loaded'.format(
                                         len(application[0]['services'])))
             self.application = application[0]
-        
+            return True
+
+
+    @dispatcher.public
+    def application_start(self):
+        t = self.loop.create_task(self._application_start())
+        return 'Started'
+        #done, _ = asyncio.wait([t])
+        #for t in done:
+        #    print (t.result())
+
+
+    async def _application_start(self):
+        docker = Docker()
+        try:
+            for service in self.application['services']:            
+                image = await docker.images.pull(from_image=service['image'],
+                                                 tag=service['tag'])
+                config = {
+                    'Image': '{}:{}'.format(service['image'], service['tag']),                
+                }
+                if service['cmd']:
+                    json_cmd = json.loads(service['cmd'])
+                    config.update({'Cmd': json_cmd})
+                container = await docker.containers.create_or_replace(
+                                name=service['name'], config=config)
+                await container.start()
+                logs = await container.log(stdout=True)
+                await self.device_log('\n'.join(logs))
+            return True
+
+        except (DockerError, ValueError) as e:
+            await self.device_log('{}'.format(e))
+
+        except Exception as e:
+            logger.exception(e)
+            await self.device_log('{}'.format(e))
+
+        finally:
+            await docker.close()
+
+
+    async def device_log(self, log):
+        if not log:
+            return
+        await self.odoo.create('device_manager.device_log', {
+            'device': self.settings['device_id'],
+            'log': log,
+        })
+
 
     # === Agent exit ===
     async def stop(self):
@@ -83,8 +138,7 @@ class Supervisor(MQTTRPC):
                     return False
                 else:
                     logger.debug('Register reponse {}'.format(data))
-                    self.settings['username'] = data['result']['username']
-                    self.settings['password'] = data['result']['password']
+                    self.settings = data['result']
                     await self.settings_save()
                     return True
 
@@ -115,23 +169,6 @@ class Supervisor(MQTTRPC):
             return True
 
 
-    @dispatcher.public
-    async def build_agent(self, image_name, version='latest'):
-        docker = Docker()        
-        image = await docker.images.pull(from_image=image_name, tag=version)
-        print (dir(image))
-        container = await docker.containers.create_or_replace(name='agent', config={
-            'Image': '{}:{}'.format(image_name, version),
-            'Command': ['ls /etc']
-        })
-        await container.start()
-        logs = await container.log(stdout=True)
-        print(''.join(logs))
-        print(dir(container))
-        await docker.close()
-        return True
-
-
 
 if __name__ == '__main__':
     logging.basicConfig(level=logging.DEBUG)
@@ -139,4 +176,5 @@ if __name__ == '__main__':
     loop = asyncio.get_event_loop()
     s = Supervisor(loop=loop)
     loop.create_task(s.process_messages())
-    loop.run_until_complete(s.start())
+    loop.create_task(s.start())
+    loop.run_forever()

@@ -1,0 +1,26 @@
+<odoo>
+  <data>
+      <!--Menu in header-->
+      <menuitem id="main_device_manager_menu" name="Device Manager"/>
+      <!--Main menu item on the left panel-->
+      <menuitem id="device_manager_menu" name="Device Manager" 
+                parent="main_device_manager_menu"/>
+      <!--Devices menu-->
+      <menuitem id="device_menu" name="Devices" parent="device_manager_menu"
+                action="device_list_action" sequence="10"/>
+      <!--Applications menu-->
+      <menuitem id="application_menu" name="Applications" 
+                parent="device_manager_menu" sequence="20"
+                action="application_list_action"/>
+      <!--Services menu-->
+      <menuitem id="service_menu" name="Services" parent="device_manager_menu"
+                sequence="25" action="service_list_action"/>                
+      <!--Images menu-->
+      <menuitem id="image_menu" name="Images" parent="device_manager_menu"
+                sequence="30" action="image_list_action"/>
+      <!--Variables menu-->
+      <menuitem id="variable_menu" name="Variables" parent="device_manager_menu"
+                sequence="40" action="variable_list_action"/>
+
+  </data>
+</odoo>

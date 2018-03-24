@@ -1,7 +1,6 @@
 import logging
 from odoo import models, fields, api
 from odoo.exceptions import Warning
-from jinja2 import Environment
 
 logger = logging.getLogger(__name__)
 
@@ -15,14 +14,16 @@ class Application(models.Model):
     @api.one
     def build(self):
         self.ensure_one()
-        result = {'services': {}}
+        result = {'services': []}
         service = self.services[0]
         for service in self.services:
-            result['services'][service.name] = {
+            result['services'].append({
+                'name': service.name,
                 'image': service.image,
                 'tag': service.tag,
+                'cmd': service.cmd,
                 'environment': [(v.name, v.value) for v in service.environment],
-            }
+            })
         return result
 
 
@@ -30,4 +31,8 @@ class Application(models.Model):
     def get_application_for_device(self, device_uid):
         device = self.env['device_manager.device'].search(
                                         [('device_uid','in', device_uid)])
+        if not device:
+            logger.warning('Device {} not found'.format(device_uid))
+            return {}
+        device.last_online = fields.Datetime.now()
         return device.application.build()
