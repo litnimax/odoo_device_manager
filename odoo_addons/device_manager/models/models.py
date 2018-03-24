@@ -47,6 +47,7 @@ class Device(models.Model):
 
 class Variable(models.Model):
     _name = 'device_manager.variable'
+    _order = 'name'
 
     name = fields.Char(required=True)
     value = fields.Char()

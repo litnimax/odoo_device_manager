@@ -15,12 +15,19 @@ class Application(models.Model):
     @api.one
     def build(self):
         self.ensure_one()
-        template = self.env.ref('device_manager.docker_compose_yml')
-        return template.render(values={'services': self.services})
+        result = {'services': {}}
+        service = self.services[0]
+        for service in self.services:
+            result['services'][service.name] = {
+                'image': service.image,
+                'tag': service.tag,
+                'environment': [(v.name, v.value) for v in service.environment],
+            }
+        return result
 
 
     @api.model
     def get_application_for_device(self, device_uid):
         device = self.env['device_manager.device'].search(
-                                        [('device_uid','=', device_uid)])
+                                        [('device_uid','in', device_uid)])
         return device.application.build()

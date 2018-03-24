@@ -7,6 +7,7 @@ services:
     <t t-foreach="services" t-as="service">
     <t t-esc="service.name"/>:
         image: <t t-esc="service.image"/>:<t t-esc="service.tag"/>
+        container_name: <t t-esc="service.name"/>
         restart: <t t-esc="service.restart"/>        
     </t>
     </template>

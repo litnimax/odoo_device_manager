@@ -22,6 +22,7 @@ ODOO_DB = 'test'
 class Supervisor(MQTTRPC):
     version = '1.0.0'
     settings = {}
+    application = {}
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -36,14 +37,24 @@ class Supervisor(MQTTRPC):
             if  not await self.register():
                 logger.error('Cannot register device')
                 await self.stop()
+        # Init odoo connector
         uid = await self.odoo.login(ODOO_DB, 'admin', 'admin') #self.settings['username'],
                                              #self.settings['password'])
-        res = await self.odoo.execute(
+        await self.application_load()        
+
+
+    async def application_load(self):
+        application = await self.odoo.execute(
                                             'device_manager.application',
                                             'get_application_for_device', self.client_uid)
-        logger.debug(res[0])
-        open('docker-compose.supervisor.yml', 'w').write(res[0])
-
+        logger.debug(application)
+        if not application:
+            logger.error('Application is not set')
+        else:
+            logger.info('Application with {} service(s) loaded'.format(
+                                        len(application[0]['services'])))
+            self.application = application[0]
+        
 
     # === Agent exit ===
     async def stop(self):
