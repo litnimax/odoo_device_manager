@@ -42,7 +42,8 @@ class Device(models.Model):
     def application_start(self):
         self.ensure_one()
         try:
-            result = http_bridge.application_start(dst=self.device_uid)
+            result = http_bridge.application_start(dst=self.device_uid,
+                                                   timeout=60)
         except ConnectionError:
             raise Warning('Cannot connect to the bridge')
         

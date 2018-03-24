@@ -64,13 +64,10 @@ class Supervisor(MQTTRPC):
 
 
     @dispatcher.public
-    def application_start(self):
-        t = self.loop.create_task(self._application_start())
-        return 'Started'
-        #done, _ = asyncio.wait([t])
-        #for t in done:
-        #    print (t.result())
-
+    async def application_start(self):    
+        await self._application_start()
+        return True
+        
 
     async def _application_start(self):
         docker = Docker()
@@ -116,9 +113,10 @@ class Supervisor(MQTTRPC):
         """
         We have to cancel all pending coroutines for clean exit.
         """
-        await super().stop()
-        logger.info('Stopped')
+        logger.info('Stopping')
+        await super().stop()        
         sys.exit(0)
+        os._exit(0)
 
 
 
@@ -177,4 +175,8 @@ if __name__ == '__main__':
     s = Supervisor(loop=loop)
     loop.create_task(s.process_messages())
     loop.create_task(s.start())
-    loop.run_forever()
+    try:
+        loop.run_forever()
+    finally:
+        logger.info('Stopped')
+        loop.stop()

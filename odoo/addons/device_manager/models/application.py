@@ -14,6 +14,9 @@ class Application(models.Model):
     @api.one
     def build(self):
         self.ensure_one()
+        if not self.services:
+            logger.warning('No services defined for app {}'.format(self.name))
+            return {'services': []}
         result = {'services': []}
         service = self.services[0]
         for service in self.services:

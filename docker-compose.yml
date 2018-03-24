@@ -7,7 +7,6 @@ volumes:
 services:
     broker:
       image: woahbase/alpine-mosquitto
-      container_name: broker
       ports:
         - "1883:1883"
       volumes:
@@ -17,7 +16,6 @@ services:
       build:
         context: .
         dockerfile: odoo/Dockerfile
-      container_name: odoo
       depends_on:
         - db
       ports:
@@ -28,7 +26,6 @@ services:
 
     db:
       image: postgres:9-alpine
-      container_name: db
       environment:
         - POSTGRES_PASSWORD=odoo
         - POSTGRES_USER=odoo
@@ -37,10 +34,11 @@ services:
 
     http_bridge:
       image: litnimax/mqttrpc_http_bridge
-      container_name: http_bridge
       environment:
         - HTTP_URL=http://odoo:8069/jsonrpc
         - HTTP_LISTEN_ADDRESS=0.0.0.0
         - HTTP_LISTEN_PORT=8888
         - MQTT_URL=mqtt://broker
         - CLIENT_UID=odoo
+        - DEBUG=1
+        - MQTT_REPLY_TIMEOUT=60
