@@ -1,5 +1,6 @@
-<odoo>
+<odoo>    
     <data>
+
         <!--Device form view-->
         <record model="ir.ui.view" id="device_form_view">
             <field name="name">device.form</field>
@@ -12,10 +13,10 @@
                     </header>                    
                     <sheet>
                         <notebook>
-                            <page string="Device data">
+                            <page string="Settings">
                                 <group>
                                     <group>
-                                        <field name="device_uid"/>
+                                        <field name="uid"/>
                                         <field name="application"/>
                                         <field name="state"/>
                                         <field name="username"/>
@@ -34,6 +35,14 @@
                                     <field name="notes"/>
                                 </group>
                             </page>
+                            <page string="Services">
+                                <field name="services">
+                                    <tree>
+                                        <field name="service"/>
+                                        <field name="status"/>
+                                    </tree>
+                                </field>
+                            </page>
                             <page string="Variables">
                                 <field name="variables">
                                     <tree string="Environment">
@@ -45,7 +54,7 @@
                             <page string="Log">
                                 <group>
                                     <field name="logs" nolabel="1">
-                                        <tree>
+                                        <tree limit="20">
                                             <field name="create_date"/>
                                             <field name="log"/>
                                         </tree>
@@ -64,7 +73,7 @@
             <field name="model">device_manager.device</field>
             <field name="arch" type="xml">
                 <tree string="Device Tree">
-                    <field name="device_uid"/>
+                    <field name="uid"/>
                     <field name="application"/>
                     <field name="state"/>
                     <field name="username"/>
@@ -83,7 +92,7 @@
             <field name="model">device_manager.device</field>
             <field name="arch" type="xml">
                 <search>
-                    <field name="device_uid"/>
+                    <field name="uid"/>
                     <field name="application"/>
                     <field name="username"/>
                     <field name="notes"/>

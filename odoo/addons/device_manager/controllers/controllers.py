@@ -13,38 +13,38 @@ class Container(http.Controller):
      @http.route('/device_manager/register', auth='public', type='json')
      def register(self):
         token = http.request.jsonrequest.get('token')
-        device_uid = http.request.jsonrequest.get('device_uid')
+        uid = http.request.jsonrequest.get('uid')
         app = http.request.env['device_manager.application'].sudo().search(
                                             [('token','=', token)])
         if not app:
             raise Warning('Application token not found')
         # Now check if the device is already registered
         device = http.request.env['device_manager.device'].sudo().search(
-            [('device_uid','=',device_uid)])
+            [('uid','=',uid)])
         if device:
             # Check application
             if device.application.id != app.id:
                 logger.warning('Device {} already registered with app {}'.format(
-                    device_uid, device.application.name))
+                    uid, device.application.name))
                 raise Warning('Device {} already registered to app {}'.format(
-                    device_uid, device.application.name))
+                    uid, device.application.name))
             else:
                 device.last_online = fields.Datetime.now()
                 logger.debug(
-                    'Device {} is already registered'.format(device_uid))
+                    'Device {} is already registered'.format(uid))
         else:
             # Create new device
             device = http.request.env['device_manager.device'].sudo().create({
-                'device_uid': device_uid,
+                'uid': uid,
                 'application': app.id,
-                'username': device_uid,
+                'username': uid,
                 'state': 'online',
                 'password': 'todo_gen_pass',
                 'last_online': fields.Datetime.now(),
                 'supervisor_version': http.request.jsonrequest.get('version'),
             })
             logger.info(
-                'Created device {} for app {}'.format(device_uid, app.name))
+                'Created device {} for app {}'.format(uid, app.name))
         
         return {
             'device_id': device.id,

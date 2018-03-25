@@ -1,7 +1,18 @@
 import logging
 from odoo import models, fields, api
+from tinyrpc.protocols.jsonrpc import JSONRPCProtocol
+from tinyrpc.transports.http import HttpPostClientTransport
+from tinyrpc.exc import  RPCError
+from tinyrpc import RPCClient
+
 
 logger = logging.getLogger(__name__)
+
+rpc_client = RPCClient(
+    JSONRPCProtocol(),
+    HttpPostClientTransport('http://http_bridge:8888')
+)
+http_bridge = rpc_client.get_proxy()
 
 
 class Service(models.Model):
@@ -20,4 +31,27 @@ class Service(models.Model):
                                         ('unless-stopped', 'Unless-stopped')),
                                 default='on-failure')
     cmd = fields.Char(string='Command')
+    devices = fields.One2many(comodel_name='device_manager.device_service',
+                              inverse_name='service')
+    device_count = fields.Integer(compute='_get_device_count', string="Devices")
+
+
+    @api.one
+    def _get_device_count(self):
+        self.device_count = self.env[
+            'device_manager.device_service'].search_count(
+                [('service', '=', self.id)])
+
+
+    @api.one
+    def get_service(self):
+        service = self
+        return {
+            'id': service.id,
+            'name': service.name,
+            'image': service.image,
+            'tag': service.tag,
+            'cmd': service.cmd,
+            'environment': [(v.name, v.value) for v in service.environment],
+        }
 

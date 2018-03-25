@@ -49,6 +49,10 @@ class Supervisor(MQTTRPC):
             logger.error(e)
 
 
+    async def service_start(self, service):
+        logger.debug('Start service: {}'.format(service))
+
+
     async def application_load(self):
         application = await self.odoo.execute(
                                             'device_manager.application',
@@ -108,6 +112,14 @@ class Supervisor(MQTTRPC):
         })
 
 
+    @dispatcher.public
+    async def service_status(service_id):
+        try:
+            return await self.services['service_id'].status_get()
+        except IndexError:
+            raise RPCError('Service not found')
+
+
     # === Agent exit ===
     async def stop(self):
         """
@@ -127,7 +139,7 @@ class Supervisor(MQTTRPC):
                     REGISTER_URL, json={
                         'version': self.version,
                         'token': REGISTER_TOKEN,
-                        'device_uid': self.client_uid}) as resp:
+                        'uid': self.client_uid}) as resp:
                 logger.debug('Register response status {}'.format(resp.status))
                 data = await resp.json()
                 if 'error' in data:

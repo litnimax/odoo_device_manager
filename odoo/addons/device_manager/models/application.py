@@ -1,3 +1,4 @@
+import collections
 import logging
 from odoo import models, fields, api
 from odoo.exceptions import Warning
@@ -17,25 +18,44 @@ class Application(models.Model):
         if not self.services:
             logger.warning('No services defined for app {}'.format(self.name))
             return {'services': []}
+
         result = {'services': []}
-        service = self.services[0]
-        for service in self.services:
-            result['services'].append({
-                'name': service.name,
-                'image': service.image,
-                'tag': service.tag,
-                'cmd': service.cmd,
-                'environment': [(v.name, v.value) for v in service.environment],
-            })
+        for dev_service in self.services:
+            result['services'].append(dev_service.service.get_service())
         return result
 
 
     @api.model
-    def get_application_for_device(self, device_uid):
+    def get_application_for_device(self, uid):
         device = self.env['device_manager.device'].search(
-                                        [('device_uid','in', device_uid)])
+                                        [('uid','in', uid)])
         if not device:
-            logger.warning('Device {} not found'.format(device_uid))
+            logger.warning('Device {} not found'.format(uid))
             return {}
-        device.last_online = fields.Datetime.now()
-        return device.application.build()
+        device.last_online = fields.Datetime.now()        
+        # Add services
+        service_tupple = collections.namedtuple('Service', ['service_id', 'name'])
+        app_services = set([service_tupple(k.id, k.name) for k in device.application.services])
+        logger.debug('App services: {}'.format(app_services))        
+        device_services = set([service_tupple(
+                    k.service.id, k.service_name) for k in device.services])
+        logger.debug('Device services: {}'.format(device_services))
+        services_to_add = app_services - device_services
+        logger.debug('Services to add: {}'.format([s.name for s in services_to_add]))
+        for s in services_to_add:
+            logger.info('Adding service {} to {}'.format(s.name, device.uid))
+            self.env['device_manager.device_service'].create({
+                    'service': s.service_id, 
+                    'device': device.id,
+                })
+        # Now delete removed services
+        services_to_del = device_services - app_services
+        logger.debug('Services to del: {}'.format([s.name for s in services_to_del]))
+        for s in services_to_del:
+            logger.info('Removing service {} from {}'.format(s.name, device.uid))
+            d_s = self.env['device_manager.device_service'].search([
+                ('device','=', device.id),('service','=', s.service_id)])
+            d_s.unlink()
+        return self.build()        
+
+
