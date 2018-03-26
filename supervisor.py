@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import aiojobs
 import aiofiles
 import aiohttp
 import asyncio
@@ -20,11 +21,13 @@ logging.getLogger('aiohttp-json-rpc.client').setLevel(level=logging.DEBUG)
 REGISTER_URL = 'http://localhost:8069/device_manager/register?db=test'
 REGISTER_TOKEN = 'test'
 ODOO_DB = 'test'
+LOG_INTERVAL = 1 # Every seconds lookup logs and send to the cloud
 
 class Supervisor(MQTTRPC):
     version = '1.0.0'
     settings = {}
     application = {}
+    scheduler = None
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -44,39 +47,148 @@ class Supervisor(MQTTRPC):
             uid = await self.odoo.login(ODOO_DB, 'admin', 'admin') #self.settings['username'],
                                                  #self.settings['password'])
             if await self.application_load():
-                await self._application_start()                
+                await self._application_start()
         except RPCError as e:
             logger.error(e)
+        # Run docker containers logger
+        self.scheduler = await aiojobs.create_scheduler()        
+        #await self.scheduler.spawn(self.services_log())
 
 
-    async def service_start(self, service):
-        logger.debug('Start service: {}'.format(service))
+    async def services_log(self):
+        docker = Docker()
+        try:
+            for service_id, service in self.application['services'].items():
+                container = await docker.containers.get(service['container_id'])
+                logs = await container.log(stdout=True)
+                await self.device_log('\n'.join(logs))
+
+        except Exception as e:
+            logger.exception(e)
+
+        finally:
+            await docker.close()
+
+        await asyncio.sleep(LOG_INTERVAL)
+        await self.scheduler.spawn(self.services_log())
+
+
+    @dispatcher.public
+    async def service_restart(self, service_id=None):
+        if await self.service_status_(service_id) == 'running':
+            await self.service_stop_(service_id)
+            await self.service_start_(service_id)
+            return True
+        else:
+            return False
+
+
+    @dispatcher.public
+    async def service_start(self, service_id=None):
+        if await self.service_status_(service_id) == 'running':
+            return True
+        else:
+            return await self.service_start_(service_id)
+
+
+    async def service_start_(self, service_id):
+        service_id = str(service_id)
+        docker = Docker()        
+        try:
+            service = self.application['services'][service_id]
+            logger.debug('Start service: {}'.format(service['name']))
+            container = await docker.containers.get(
+                self.application['services'][service_id]['container_id'])
+            await container.start()
+            #logs = await container.log(stdout=True)
+            #await self.device_log('\n'.join(logs))            
+            return True
+        except IndexError as e:
+            logger.exception(e) # See error locally
+            raise # Return back RPC error
+        finally:
+            await docker.close()
+
+
+    @dispatcher.public
+    async def service_stop(self, service_id=None):
+        if await self.service_status_(service_id) != 'running':
+            return True
+        else:
+            return await self.service_stop_(service_id)
+
+
+    async def service_stop_(self, service_id):
+        service_id = str(service_id)
+        docker = Docker()        
+        try:
+            service = self.application['services'][service_id]
+            logger.debug('Stop service: {}'.format(service['name']))
+            container = await docker.containers.get(
+                self.application['services'][service_id]['container_id'])
+            await container.stop()
+            #logs = await container.log(stdout=True)
+            #await self.device_log('\n'.join(logs))            
+            return True
+        except IndexError as e:
+            logger.exception(e) # See error locally
+            raise # Return back RPC error
+        finally:
+            await docker.close()
+
+
+
+    @dispatcher.public
+    async def service_status(self, service_id=None):
+        return await self.service_status_(service_id)
+
+
+    async def service_status_(self, service_id):
+        service_id = str(service_id) # JSON keys are always strings
+        docker = Docker()
+        begin = self.loop.time()
+        try:
+            logger.debug('Service status for {}'.format(
+                self.application['services'][service_id]['name']))
+            container = await docker.containers.get(
+                    self.application['services'][service_id]['container_id'])
+            data = await container.show()
+            logger.debug('Service status took {}'.format(
+                                                self.loop.time() - begin))
+            return data['State']['Status']
+        except IndexError:
+            raise RPCError('Service not found')
+        finally:
+            await docker.close()
+
 
 
     async def application_load(self):
         application = await self.odoo.execute(
                                             'device_manager.application',
                                             'get_application_for_device', self.client_uid)
-        logger.debug(application)
+        logger.debug('Application: {}'.format(application))
         if not application:
             logger.error('Application is not set')
         else:
             logger.info('Application with {} service(s) loaded'.format(
-                                        len(application[0]['services'])))
-            self.application = application[0]
+                                        len(application['services'])))
+            self.application = application
             return True
 
 
     @dispatcher.public
-    async def application_start(self):    
+    async def application_start(self, reload=False):
+        if reload:
+            await self.application_load()
         await self._application_start()
         return True
         
 
     async def _application_start(self):
         docker = Docker()
-        try:
-            for service in self.application['services']:            
+        try:        
+            for service_id, service in self.application['services'].items():
                 image = await docker.images.pull(from_image=service['image'],
                                                  tag=service['tag'])
                 config = {
@@ -88,8 +200,11 @@ class Supervisor(MQTTRPC):
                 container = await docker.containers.create_or_replace(
                                 name=service['name'], config=config)
                 await container.start()
-                logs = await container.log(stdout=True)
-                await self.device_log('\n'.join(logs))
+                self.application['services'][service_id][
+                                        'container_id'] = container._id
+                #logs = await container.log(stdout=True)
+                #await self.device_log('\n'.join(logs))
+                # TODO: cleanup deleted services
             return True
 
         except (DockerError, ValueError) as e:
@@ -104,6 +219,7 @@ class Supervisor(MQTTRPC):
 
 
     async def device_log(self, log):
+        logger.debug('Device log: {}'.format(log))
         if not log:
             return
         await self.odoo.create('device_manager.device_log', {
@@ -111,13 +227,6 @@ class Supervisor(MQTTRPC):
             'log': log,
         })
 
-
-    @dispatcher.public
-    async def service_status(service_id):
-        try:
-            return await self.services['service_id'].status_get()
-        except IndexError:
-            raise RPCError('Service not found')
 
 
     # === Agent exit ===
@@ -127,8 +236,7 @@ class Supervisor(MQTTRPC):
         """
         logger.info('Stopping')
         await super().stop()        
-        sys.exit(0)
-        os._exit(0)
+        sys.exit()
 
 
 
@@ -189,6 +297,8 @@ if __name__ == '__main__':
     loop.create_task(s.start())
     try:
         loop.run_forever()
+    except SystemExit:
+        pass
     finally:
         logger.info('Stopped')
         loop.stop()

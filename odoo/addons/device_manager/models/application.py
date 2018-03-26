@@ -1,5 +1,6 @@
 import collections
 import logging
+import uuid
 from odoo import models, fields, api
 from odoo.exceptions import Warning
 
@@ -9,20 +10,12 @@ class Application(models.Model):
     _name = 'device_manager.application'
 
     name = fields.Char(required=True)
-    token = fields.Char(required=True)
+    token = fields.Char(required=True, default=lambda self: self.generate_token())
     services = fields.Many2many(comodel_name='device_manager.service')
 
-    @api.one
-    def build(self):
-        self.ensure_one()
-        if not self.services:
-            logger.warning('No services defined for app {}'.format(self.name))
-            return {'services': []}
 
-        result = {'services': []}
-        for dev_service in self.services:
-            result['services'].append(dev_service.service.get_service())
-        return result
+    def generate_token(self):
+        return uuid.uuid4().hex
 
 
     @api.model
@@ -56,6 +49,9 @@ class Application(models.Model):
             d_s = self.env['device_manager.device_service'].search([
                 ('device','=', device.id),('service','=', s.service_id)])
             d_s.unlink()
-        return self.build()        
-
-
+        # Prepare the result dict
+        result = {'services': {}}
+        for dev_service in device.services:
+            result['services'][
+                dev_service.service.id] = dev_service.service.get_service()[0]
+        return result

@@ -6,12 +6,26 @@ import pytest
 import json
 from supervisor import Supervisor
 
+test_app = {
+    'services': {
+        '1': {
+            'name': 'busybox',
+            'image': 'busybox',
+            'cmd': '["echo", "hello"]',
+            'environment': [],
+            'tag': 'latest',
+            'id': 1,
+            'container_id': 'fa86df75d855fd99a0dd504552c343791decb10b20186c63132dd6a2d6ad6344',
+        }
+    }
+}
 
 @pytest.mark.asyncio
-async def test_build_agent(event_loop):
+async def test_service_status(event_loop):
     s = Supervisor(loop=event_loop)
-    res = await s.build_agent(image_name='busybox')
-    assert res == True
+    s.application = test_app
+    res = await s.service_status(service_id=1)
+    assert res == 'exited'
     await s.stop()
 
 

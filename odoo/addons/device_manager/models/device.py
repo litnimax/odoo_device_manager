@@ -46,7 +46,7 @@ class Device(models.Model):
         self.ensure_one()
         try:
             result = http_bridge.application_start(dst=self.uid,
-                                                   timeout=30)
+                                                   timeout=30, reload=True)
         except ConnectionError:
             raise Warning('Cannot connect to the bridge')
         except RPCError as e:
@@ -59,7 +59,7 @@ class DeviceService(models.Model):
     device = fields.Many2one(comodel_name='device_manager.device')
     service = fields.Many2one(comodel_name='device_manager.service')
     service_name = fields.Char(related='service.name', readonly=True)
-    status = fields.Char()#selection=(
+    status = fields.Char(#selection=(
                               #          ('created','Created'),
                               #          ('restarting', 'Restarting'),
                               #          ('running', 'Running'),
@@ -67,7 +67,7 @@ class DeviceService(models.Model):
                               #          ('paused', 'paused'),
                               #          ('exited', 'exited'),
                               #          ('dead', 'dead')))
-    #                          compute='_get_status')
+                              compute='status_get')
 
     _sql_constraints = [
         (
@@ -78,13 +78,37 @@ class DeviceService(models.Model):
     ]
 
     @api.one
-    def _get_status(self):
+    def status_get(self):
         self.ensure_one()
         try:
-            self.status = http_bridge.service_status(dst=self.device.uid)
+            self.status = http_bridge.service_status(dst=self.device.uid,
+                                                     service_id=self.service.id)
         except RPCError:
             self.status = 'error'
 
+    @api.one
+    def start(self):
+        try:
+            http_bridge.service_start(dst=self.device.uid, timeout=30,
+                                      service_id=self.service.id)
+        except RPCError as e:
+            raise Warning(str(e))
+
+    @api.one
+    def stop(self):
+        try:
+            http_bridge.service_stop(dst=self.device.uid, timeout=30,
+                                      service_id=self.service.id)
+        except RPCError as e:
+            raise Warning(str(e))
+
+    @api.one
+    def restart(self):
+        try:
+            http_bridge.service_restart(dst=self.device.uid, timeout=60,
+                                      service_id=self.service.id)
+        except RPCError as e:
+            raise Warning(str(e))
 
 class DeviceLog(models.Model):
     _name = 'device_manager.device_log'

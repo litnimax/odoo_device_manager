@@ -40,6 +40,12 @@
                                     <tree>
                                         <field name="service"/>
                                         <field name="status"/>
+                                        <button icon="fa-retweet" type="object" 
+                                                name="restart" help="Restart"/>
+                                        <button icon="fa-play" type="object" 
+                                                name="start" help="Start"/>
+                                        <button icon="fa-square" type="object" 
+                                                name="stop" help="Stop"/>
                                     </tree>
                                 </field>
                             </page>

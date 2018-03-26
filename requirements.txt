@@ -1,3 +1,4 @@
 aiodocker
+aiojobs
 aiofiles
 git+https://github.com/litnimax/python-mqttrpc.git

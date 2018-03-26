@@ -7,6 +7,32 @@ Dependencies:
 
 Work is in progress...
 
+## Show me the power of the rocket...
+Imagine a docker container running on RPi. And we have the following Odoo
+model:
+```python
+class DeviceService(models.Model):
+    _name = 'device_manager.device_service'
+
+    device = fields.Many2one(comodel_name='device_manager.device')
+    service = fields.Many2one(comodel_name='device_manager.service')
+    service_name = fields.Char(related='service.name', readonly=True)
+    status = fields.Char(compute='_get_status')
+```
+Every time device form is open status is fetched from RPi in realtime using RPC over MQTT:
+```
+    @api.one
+    def _get_status(self):
+        self.status = http_bridge.service_status(dst=self.device.uid,
+                                            service_id=self.service.id)
+```
+Broker log:
+```
+mosquitto_sub -t '#' -v
+rpc/180725257349411/odoo {"params": {}, "jsonrpc": "2.0", "method": "service_status", "id": 7}
+rpc/180725257349411/odoo/reply {"jsonrpc": "2.0", "id": 7, "result": "running"}
+```
+
 ## Concepts
 Create an application. Generate an access token. Run supervisor.py like this:
 ```sh
