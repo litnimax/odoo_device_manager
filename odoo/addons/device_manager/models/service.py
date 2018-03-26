@@ -34,6 +34,7 @@ class Service(models.Model):
     devices = fields.One2many(comodel_name='device_manager.device_service',
                               inverse_name='service')
     device_count = fields.Integer(compute='_get_device_count', string="Devices")
+    ports = fields.Char()
 
 
     @api.one
@@ -46,12 +47,13 @@ class Service(models.Model):
     @api.one
     def get_service(self):
         service = self
-        return {
+        config = {
             'id': service.id,
-            'name': service.name,
-            'image': service.image,
-            'tag': service.tag,
-            'cmd': service.cmd,
-            'environment': [(v.name, v.value) for v in service.environment],
+            'Name': service.name,
+            'Image': '{}:{}'.format(service.image, service.tag),
+            'Env': ['{}={}'.format(v.name, v.value) for v in service.environment],
+            #'PortBindings': [{'{}/tcp'.format(p):[{ "HostPort": "{}".format(p) }] } for p in ports]
         }
-
+        if service.cmd:
+            config.update({'Cmd': service.cmd})
+        return config

@@ -8,6 +8,7 @@ from aiodocker.exceptions import DockerError
 import json
 import logging
 import os
+import time
 import sys
 import yaml
 from aiodocker import Docker
@@ -18,20 +19,81 @@ from tinyrpc.exc import RPCError
 logger = logging.getLogger(__name__)
 logging.getLogger('aiohttp-json-rpc.client').setLevel(level=logging.DEBUG)
 
-REGISTER_URL = 'http://localhost:8069/device_manager/register?db=test'
-REGISTER_TOKEN = 'test'
-ODOO_DB = 'test'
-LOG_INTERVAL = 1 # Every seconds lookup logs and send to the cloud
+REGISTER_URL = os.environ.get('REGISTER_URL', 
+                    'http://localhost:8069/device_manager/register?db=test')
+REGISTER_TOKEN = os.environ.get('REGISTER_TOKEN', 'test')
+ODOO_DB = os.environ.get('ODOO_DB', 'test')
+# Every seconds lookup logs and send to the cloud
+LOG_INTERVAL = int(os.environ.get('LOG_INTERVAL', '1')) 
+
 
 class Supervisor(MQTTRPC):
     version = '1.0.0'
     settings = {}
     application = {}
     scheduler = None
+    last_logs = 0
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.odoo = OdooRPCProxy(self, 'odoo')
+
+
+    async def application_load(self):
+        application = await self.odoo.execute(
+                                            'device_manager.application',
+                                            'get_application_for_device', self.client_uid)
+        logger.debug('Application: {}'.format(application))
+        if not application:
+            logger.error('Application is not set')
+        else:
+            logger.info('Application with {} service(s) loaded'.format(
+                                        len(application['services'])))
+            self.application = application
+            return True
+
+
+    @dispatcher.public
+    async def application_start(self, reload=False):
+        if reload:
+            await self.application_load()
+        await self.application_start_()
+        return True
+        
+
+    async def application_start_(self):
+        docker = Docker()
+        try:        
+            for service_id, service in self.application['services'].items():
+                image = await docker.images.pull(from_image=service['Image'])
+                container = await docker.containers.create_or_replace(
+                    name=service['Name'], config=service)
+                await container.start()
+                self.application['services'][service_id][
+                                        'container_id'] = container._id
+            return True
+
+        except (DockerError, ValueError) as e:
+            await self.device_log('{}'.format(e))
+
+        except Exception as e:
+            logger.exception(e)
+            await self.device_log('{}'.format(e))
+
+        finally:
+            await docker.close()
+
+
+    async def device_log(self, log):
+        if not log:
+            return
+        logger.debug('Device logs since {} : {}'.format(self.last_logs, log))
+        await self.odoo.create('device_manager.device_log', {
+            'device': self.settings['device_id'],
+            'log': log,
+        })
+        self.last_logs = int(time.time())            
+
 
 
     async def start(self):
@@ -47,21 +109,34 @@ class Supervisor(MQTTRPC):
             uid = await self.odoo.login(ODOO_DB, 'admin', 'admin') #self.settings['username'],
                                                  #self.settings['password'])
             if await self.application_load():
-                await self._application_start()
+                await self.application_start_()
         except RPCError as e:
             logger.error(e)
         # Run docker containers logger
         self.scheduler = await aiojobs.create_scheduler()        
-        #await self.scheduler.spawn(self.services_log())
+        await self.scheduler.spawn(self.services_log())
+
+
+    # === Agent exit ===
+    async def stop(self):
+        """
+        We have to cancel all pending coroutines for clean exit.
+        """
+        logger.info('Stopping')
+        await super().stop()        
+        sys.exit()
 
 
     async def services_log(self):
         docker = Docker()
-        try:
+        try:            
             for service_id, service in self.application['services'].items():
+                if not service.get('container_id'):
+                    continue # Container not yet started
                 container = await docker.containers.get(service['container_id'])
-                logs = await container.log(stdout=True)
-                await self.device_log('\n'.join(logs))
+                logs = await container.log(stdout=True, stderr=True, details=True,
+                                           since=self.last_logs)
+                await self.device_log('\n'.join(logs))                                
 
         except Exception as e:
             logger.exception(e)
@@ -100,8 +175,6 @@ class Supervisor(MQTTRPC):
             container = await docker.containers.get(
                 self.application['services'][service_id]['container_id'])
             await container.start()
-            #logs = await container.log(stdout=True)
-            #await self.device_log('\n'.join(logs))            
             return True
         except IndexError as e:
             logger.exception(e) # See error locally
@@ -127,8 +200,6 @@ class Supervisor(MQTTRPC):
             container = await docker.containers.get(
                 self.application['services'][service_id]['container_id'])
             await container.stop()
-            #logs = await container.log(stdout=True)
-            #await self.device_log('\n'.join(logs))            
             return True
         except IndexError as e:
             logger.exception(e) # See error locally
@@ -160,83 +231,6 @@ class Supervisor(MQTTRPC):
             raise RPCError('Service not found')
         finally:
             await docker.close()
-
-
-
-    async def application_load(self):
-        application = await self.odoo.execute(
-                                            'device_manager.application',
-                                            'get_application_for_device', self.client_uid)
-        logger.debug('Application: {}'.format(application))
-        if not application:
-            logger.error('Application is not set')
-        else:
-            logger.info('Application with {} service(s) loaded'.format(
-                                        len(application['services'])))
-            self.application = application
-            return True
-
-
-    @dispatcher.public
-    async def application_start(self, reload=False):
-        if reload:
-            await self.application_load()
-        await self._application_start()
-        return True
-        
-
-    async def _application_start(self):
-        docker = Docker()
-        try:        
-            for service_id, service in self.application['services'].items():
-                image = await docker.images.pull(from_image=service['image'],
-                                                 tag=service['tag'])
-                config = {
-                    'Image': '{}:{}'.format(service['image'], service['tag']),                
-                }
-                if service['cmd']:
-                    json_cmd = json.loads(service['cmd'])
-                    config.update({'Cmd': json_cmd})
-                container = await docker.containers.create_or_replace(
-                                name=service['name'], config=config)
-                await container.start()
-                self.application['services'][service_id][
-                                        'container_id'] = container._id
-                #logs = await container.log(stdout=True)
-                #await self.device_log('\n'.join(logs))
-                # TODO: cleanup deleted services
-            return True
-
-        except (DockerError, ValueError) as e:
-            await self.device_log('{}'.format(e))
-
-        except Exception as e:
-            logger.exception(e)
-            await self.device_log('{}'.format(e))
-
-        finally:
-            await docker.close()
-
-
-    async def device_log(self, log):
-        logger.debug('Device log: {}'.format(log))
-        if not log:
-            return
-        await self.odoo.create('device_manager.device_log', {
-            'device': self.settings['device_id'],
-            'log': log,
-        })
-
-
-
-    # === Agent exit ===
-    async def stop(self):
-        """
-        We have to cancel all pending coroutines for clean exit.
-        """
-        logger.info('Stopping')
-        await super().stop()        
-        sys.exit()
 
 
 

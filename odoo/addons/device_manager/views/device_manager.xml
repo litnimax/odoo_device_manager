@@ -202,6 +202,7 @@
                             </group>
                             <group>
                                 <field name="cmd"/>
+                                <field name="ports" help="Port pairs, like 8080:8080,53:53/udp"/>
                                 <field name="depends_on" widget="many2many_tags"/>
                                 <field name="restart"/>
                             </group>
