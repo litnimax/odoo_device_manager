@@ -64,15 +64,7 @@ class DeviceService(models.Model):
     service = fields.Many2one(comodel_name='device_manager.service',
                               ondelete='cascade')
     service_name = fields.Char(related='service.name', readonly=True)
-    status = fields.Char(  # selection=(
-        #          ('created','Created'),
-        #          ('restarting', 'Restarting'),
-        #          ('running', 'Running'),
-        #          ('removing', 'removing'),
-        #          ('paused', 'paused'),
-        #          ('exited', 'exited'),
-        #          ('dead', 'dead')))
-        compute='status_get')
+    status = fields.Char(compute='status_get')
 
     _sql_constraints = [
         (
@@ -85,11 +77,18 @@ class DeviceService(models.Model):
     @api.one
     def service_get(self):
         self.ensure_one()
+        # Merge environment for service and device service
+        env = {}
+        env.update([{e.name, e.value} for e in self.service.environment])
+        logger.debug('Service env: {}'.format(env))
+        # Now take device env
+        env.update([{e.name, e.value} for e in self.device.environment])
+        logger.debug('Device env: {}'.format(env))
         config = {
             'id': self.service.id,
             'Name': self.service.name,
             'Image': '{}:{}'.format(self.service.image, self.service.tag),
-            'Env': ['{}={}'.format(v.name, v.value) for v in self.service.environment],
+            'Env': ['{}={}'.format(k,v) for k,v in env.items()],
         }
         for p in self.device.ports:
             config.update({
