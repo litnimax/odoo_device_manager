@@ -40,6 +40,10 @@ class Device(models.Model):
     notes = fields.Text()
     logs = fields.One2many(comodel_name='device_manager.device_log',
                            inverse_name='device')
+    
+    ports = fields.One2many(comodel_name='device_manager.device_port',
+                           inverse_name='device')
+
 
     @api.one
     def application_start(self):
@@ -56,8 +60,10 @@ class Device(models.Model):
 class DeviceService(models.Model):
     _name = 'device_manager.device_service'
 
-    device = fields.Many2one(comodel_name='device_manager.device')
-    service = fields.Many2one(comodel_name='device_manager.service')
+    device = fields.Many2one(comodel_name='device_manager.device',
+                             ondelete='cascade')
+    service = fields.Many2one(comodel_name='device_manager.service',
+                              ondelete='cascade')
     service_name = fields.Char(related='service.name', readonly=True)
     status = fields.Char(#selection=(
                               #          ('created','Created'),
@@ -76,6 +82,26 @@ class DeviceService(models.Model):
             _(u'This device already has this service!')
         )
     ]
+
+
+    @api.one
+    def service_get(self):
+        self.ensure_one()
+        config = {
+            'id': self.service.id,
+            'Name': self.service.name,
+            'Image': '{}:{}'.format(self.service.image, self.service.tag),
+            'Env': ['{}={}'.format(v.name, v.value) for v in self.service.environment],
+        }
+        for p in self.device.ports:
+            config.update({
+                'PortBindings': {
+                    '{}/{}'.format(p.device_port, p.protocol):[
+                                    { "HostPort": "{}".format(p.host_port)}]}})
+        if self.service.cmd:
+            config.update({'Cmd': self.service.cmd.split(',')})
+        return config
+
 
     @api.one
     def status_get(self):
@@ -110,10 +136,25 @@ class DeviceService(models.Model):
         except RPCError as e:
             raise Warning(str(e))
 
+
 class DeviceLog(models.Model):
     _name = 'device_manager.device_log'
     _order = 'create_date desc'
 
     device = fields.Many2one(comodel_name='device_manager.device')
+    service = fields.Many2one('device_manager.service')
     log = fields.Char()
+
+
+
+class DevicePort(models.Model):
+    _name = 'device_manager.device_port'
+    _order = 'device_port'
+
+    device = fields.Many2one(comodel_name='device_manager.device',
+                             required=True, ondelete='cascade')
+    device_port = fields.Integer(required=True, help="Port on docker container")
+    host_port = fields.Integer(required=True, help="Port on docker host")
+    protocol = fields.Selection(selection=(('udp', 'UDP'), ('tcp', 'TCP')),
+                                default='tcp', required=True)
 

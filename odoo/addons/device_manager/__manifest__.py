@@ -28,6 +28,7 @@
         #'views/templates.xml',
         'views/device_manager.xml',
         'views/device.xml',
+        'views/service.xml',
         'views/views.xml',        
     ],
     # only loaded in demonstration mode

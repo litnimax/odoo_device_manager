@@ -27,31 +27,37 @@ class Application(models.Model):
             return {}
         device.last_online = fields.Datetime.now()        
         # Add services
-        service_tupple = collections.namedtuple('Service', ['service_id', 'name'])
-        app_services = set([service_tupple(k.id, k.name) for k in device.application.services])
-        logger.debug('App services: {}'.format(app_services))        
-        device_services = set([service_tupple(
-                    k.service.id, k.service_name) for k in device.services])
-        logger.debug('Device services: {}'.format(device_services))
-        services_to_add = app_services - device_services
+        logger.debug('App services: {}'.format(
+            [k.name for k in device.application.services]))
+        device_services = self.env['device_manager.service'].search(
+            [('id','in', [k.service.id for k in device.services])])
+        logger.debug('Device services: {}'.format([k.name for k in device_services]))
+        services_to_add = device.application.services - device_services
         logger.debug('Services to add: {}'.format([s.name for s in services_to_add]))
         for s in services_to_add:
             logger.info('Adding service {} to {}'.format(s.name, device.uid))
-            self.env['device_manager.device_service'].create({
-                    'service': s.service_id, 
+            d_s = self.env['device_manager.device_service'].create({
+                    'service': s.id, 
                     'device': device.id,
                 })
+            for port in s.ports:
+                self.env['device_manager.device_port'].create({
+                    'device': device.id,
+                    'device_port': port.port,
+                    'host_port': port.port,
+                    'protocol': port.protocol,
+                })
         # Now delete removed services
-        services_to_del = device_services - app_services
+        services_to_del = device_services - device.application.services
         logger.debug('Services to del: {}'.format([s.name for s in services_to_del]))
         for s in services_to_del:
             logger.info('Removing service {} from {}'.format(s.name, device.uid))
             d_s = self.env['device_manager.device_service'].search([
-                ('device','=', device.id),('service','=', s.service_id)])
+                ('device','=', device.id),('service','=', s.id)])
             d_s.unlink()
         # Prepare the result dict
         result = {'services': {}}
         for dev_service in device.services:
             result['services'][
-                dev_service.service.id] = dev_service.service.get_service()[0]
+                dev_service.service.id] = dev_service.service_get()[0]
         return result

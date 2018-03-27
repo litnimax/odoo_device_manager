@@ -34,7 +34,8 @@ class Service(models.Model):
     devices = fields.One2many(comodel_name='device_manager.device_service',
                               inverse_name='service')
     device_count = fields.Integer(compute='_get_device_count', string="Devices")
-    ports = fields.Char()
+    ports = fields.One2many(comodel_name='device_manager.service_port',
+                            inverse_name='service')
 
 
     @api.one
@@ -44,16 +45,15 @@ class Service(models.Model):
                 [('service', '=', self.id)])
 
 
-    @api.one
-    def get_service(self):
-        service = self
-        config = {
-            'id': service.id,
-            'Name': service.name,
-            'Image': '{}:{}'.format(service.image, service.tag),
-            'Env': ['{}={}'.format(v.name, v.value) for v in service.environment],
-            #'PortBindings': [{'{}/tcp'.format(p):[{ "HostPort": "{}".format(p) }] } for p in ports]
-        }
-        if service.cmd:
-            config.update({'Cmd': service.cmd})
-        return config
+
+class ServicePort(models.Model):
+    _name = 'device_manager.service_port'
+    _order = 'port'
+
+    service = fields.Many2one(comodel_name='device_manager.service',
+                              required=True, ondelete='cascade')
+    port = fields.Integer(required=True, help="Port on docker container")
+    protocol = fields.Selection(selection=(('udp', 'UDP'), ('tcp', 'TCP')),
+                                default='tcp', required=True)
+
+

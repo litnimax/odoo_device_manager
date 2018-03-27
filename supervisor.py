@@ -5,6 +5,7 @@ import aiohttp
 import asyncio
 import aiodocker
 from aiodocker.exceptions import DockerError
+from datetime import datetime, timezone
 import json
 import logging
 import os
@@ -64,13 +65,8 @@ class Supervisor(MQTTRPC):
     async def application_start_(self):
         docker = Docker()
         try:        
-            for service_id, service in self.application['services'].items():
-                image = await docker.images.pull(from_image=service['Image'])
-                container = await docker.containers.create_or_replace(
-                    name=service['Name'], config=service)
-                await container.start()
-                self.application['services'][service_id][
-                                        'container_id'] = container._id
+            for service_id in self.application['services']:
+                await self.service_start_(service_id)
             return True
 
         except (DockerError, ValueError) as e:
@@ -84,16 +80,19 @@ class Supervisor(MQTTRPC):
             await docker.close()
 
 
-    async def device_log(self, log):
+    async def device_log(self, log, service_id=None):
         if not log:
             return
-        logger.debug('Device logs since {} : {}'.format(self.last_logs, log))
-        await self.odoo.create('device_manager.device_log', {
-            'device': self.settings['device_id'],
-            'log': log,
-        })
-        self.last_logs = int(time.time())            
+        logger.debug('Device log since {} : {}'.format(self.last_logs, log))
+        try:
+            await self.odoo.create('device_manager.device_log', {
+                'device': self.settings['device_id'],
+                'log': log,
+                'service': service_id,
+            })
 
+        except Exception as e:
+            logger.exception(e)
 
 
     async def start(self):
@@ -128,6 +127,9 @@ class Supervisor(MQTTRPC):
 
 
     async def services_log(self):
+        if not self.application.get('services'):
+            logger.debug('No services to log')
+            return
         docker = Docker()
         try:            
             for service_id, service in self.application['services'].items():
@@ -136,12 +138,13 @@ class Supervisor(MQTTRPC):
                 container = await docker.containers.get(service['container_id'])
                 logs = await container.log(stdout=True, stderr=True, details=True,
                                            since=self.last_logs)
-                await self.device_log('\n'.join(logs))                                
+                await self.device_log('\n'.join(logs), service_id=service_id)                                
 
         except Exception as e:
             logger.exception(e)
 
         finally:
+            self.last_logs = datetime.now().timestamp()
             await docker.close()
 
         await asyncio.sleep(LOG_INTERVAL)
@@ -170,14 +173,23 @@ class Supervisor(MQTTRPC):
         service_id = str(service_id)
         docker = Docker()        
         try:
-            service = self.application['services'][service_id]
-            logger.debug('Start service: {}'.format(service['name']))
-            container = await docker.containers.get(
-                self.application['services'][service_id]['container_id'])
+            service = self.application['services'][service_id]            
+            if not service.get('image_pulled'):
+                logger.debug('Image pull started')
+                image = await docker.images.pull(from_image=service['Image'])
+                logger.debug('Image pull ended')
+                service['image_pulled'] = True
+            logger.debug('Start service: {}'.format(service['Name']))
+            container = await docker.containers.create_or_replace(
+                                    name=service['Name'], config=service)
+            self.application['services'][service_id][
+                                        'container_id'] = container._id
+            logger.debug('service started ({}): container {}'.format(
+                                service['Name'], container._id))
             await container.start()
             return True
         except IndexError as e:
-            logger.exception(e) # See error locally
+            logger.exception(e) # See error locally            
             raise # Return back RPC error
         finally:
             await docker.close()
@@ -196,7 +208,11 @@ class Supervisor(MQTTRPC):
         docker = Docker()        
         try:
             service = self.application['services'][service_id]
-            logger.debug('Stop service: {}'.format(service['name']))
+            logger.debug('Stop service: {}'.format(service['Name']))
+            if not self.application['services'][service_id].get('container_id'):
+                logger.warning(
+                    'service stopped ({}): no container'.format(service['Name']))                
+                return 'no container'
             container = await docker.containers.get(
                 self.application['services'][service_id]['container_id'])
             await container.stop()
@@ -220,7 +236,9 @@ class Supervisor(MQTTRPC):
         begin = self.loop.time()
         try:
             logger.debug('Service status for {}'.format(
-                self.application['services'][service_id]['name']))
+                self.application['services'][service_id]['Name']))
+            if not self.application['services'][service_id].get('container_id'):
+                return 'starting'
             container = await docker.containers.get(
                     self.application['services'][service_id]['container_id'])
             data = await container.show()
@@ -229,6 +247,8 @@ class Supervisor(MQTTRPC):
             return data['State']['Status']
         except IndexError:
             raise RPCError('Service not found')
+        except Exception as e:
+            logger.exception(e)
         finally:
             await docker.close()
 

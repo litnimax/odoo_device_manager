@@ -23,6 +23,7 @@ services:
       volumes:
         - "supervisor_odoo_data:/var/lib/odoo"
         - "./odoo/addons:/mnt/extra-addons"
+      command: ["odoo", "--workers=0", "--db-filter=test", "--database=test", "--log-level=debug"]
 
     db:
       image: postgres:9-alpine

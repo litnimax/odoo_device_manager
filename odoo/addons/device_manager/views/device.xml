@@ -49,6 +49,31 @@
                                     </tree>
                                 </field>
                             </page>
+                            <page string="Network">
+                                <group>
+                                    <field name="ports"
+                                           context="{'default_device': active_id}">
+                                        <tree>
+                                            <field name="device_port"/>
+                                            <field name="host_port"/>
+                                            <field name="protocol"/>
+                                        </tree>
+                                        <form>
+                                            <sheet>
+                                                <group>
+                                                    <group>
+                                                        <field name="device_port"/>
+                                                        <field name="protocol"/>
+                                                    </group>
+                                                    <group>
+                                                        <field name="host_port"/>
+                                                    </group> 
+                                                </group>                                               
+                                            </sheet>
+                                        </form>
+                                    </field>
+                                </group>
+                            </page>
                             <page string="Variables">
                                 <field name="variables">
                                     <tree string="Environment">
@@ -62,8 +87,18 @@
                                     <field name="logs" nolabel="1">
                                         <tree limit="20">
                                             <field name="create_date"/>
+                                            <field name="service"/>
                                             <field name="log"/>
                                         </tree>
+                                        <form>
+                                            <sheet>
+                                                <group>
+                                                    <field name="create_date"/>
+                                                    <field name="service"/>
+                                                    <field name="log"/>                                                    
+                                                </group>
+                                            </sheet>
+                                        </form>
                                     </field>
                                 </group>
                             </page>
