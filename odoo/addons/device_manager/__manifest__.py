@@ -26,9 +26,11 @@
     'data': [
         # 'security/ir.model.access.csv',
         #'views/templates.xml',
-        'views/device_manager.xml',
+        'views/application.xml',
         'views/device.xml',
         'views/service.xml',
+        'views/image.xml',
+        'views/variable.xml',
         'views/views.xml',        
     ],
     # only loaded in demonstration mode

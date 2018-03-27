@@ -4,9 +4,8 @@ from odoo.exceptions import Warning
 from requests import ConnectionError
 from tinyrpc.protocols.jsonrpc import JSONRPCProtocol
 from tinyrpc.transports.http import HttpPostClientTransport
-from tinyrpc.exc import  RPCError
+from tinyrpc.exc import RPCError
 from tinyrpc import RPCClient
-
 
 logger = logging.getLogger(__name__)
 
@@ -23,11 +22,11 @@ class Device(models.Model):
 
     uid = fields.Char(required=True, index=True, string="UID", oldname='device_uid')
     application = fields.Many2one(comodel_name='device_manager.application')
-    services = fields.One2many(comodel_name='device_manager.device_service', 
+    services = fields.One2many(comodel_name='device_manager.device_service',
                                inverse_name='device')
     state = fields.Selection(selection=(
-                                         ('online', 'Online'),
-                                         ('offline', 'Offline'))
+        ('online', 'Online'),
+        ('offline', 'Offline'))
     )
     username = fields.Char()
     password = fields.Char()
@@ -40,10 +39,9 @@ class Device(models.Model):
     notes = fields.Text()
     logs = fields.One2many(comodel_name='device_manager.device_log',
                            inverse_name='device')
-    
-    ports = fields.One2many(comodel_name='device_manager.device_port',
-                           inverse_name='device')
 
+    ports = fields.One2many(comodel_name='device_manager.device_port',
+                            inverse_name='device')
 
     @api.one
     def application_start(self):
@@ -55,7 +53,7 @@ class Device(models.Model):
             raise Warning('Cannot connect to the bridge')
         except RPCError as e:
             raise Warning('{}'.format(e))
-        
+
 
 class DeviceService(models.Model):
     _name = 'device_manager.device_service'
@@ -65,15 +63,15 @@ class DeviceService(models.Model):
     service = fields.Many2one(comodel_name='device_manager.service',
                               ondelete='cascade')
     service_name = fields.Char(related='service.name', readonly=True)
-    status = fields.Char(#selection=(
-                              #          ('created','Created'),
-                              #          ('restarting', 'Restarting'),
-                              #          ('running', 'Running'),
-                              #          ('removing', 'removing'),
-                              #          ('paused', 'paused'),
-                              #          ('exited', 'exited'),
-                              #          ('dead', 'dead')))
-                              compute='status_get')
+    status = fields.Char(  # selection=(
+        #          ('created','Created'),
+        #          ('restarting', 'Restarting'),
+        #          ('running', 'Running'),
+        #          ('removing', 'removing'),
+        #          ('paused', 'paused'),
+        #          ('exited', 'exited'),
+        #          ('dead', 'dead')))
+        compute='status_get')
 
     _sql_constraints = [
         (
@@ -82,7 +80,6 @@ class DeviceService(models.Model):
             _(u'This device already has this service!')
         )
     ]
-
 
     @api.one
     def service_get(self):
@@ -96,12 +93,11 @@ class DeviceService(models.Model):
         for p in self.device.ports:
             config.update({
                 'PortBindings': {
-                    '{}/{}'.format(p.device_port, p.protocol):[
-                                    { "HostPort": "{}".format(p.host_port)}]}})
+                    '{}/{}'.format(p.device_port, p.protocol): [
+                        {"HostPort": "{}".format(p.host_port)}]}})
         if self.service.cmd:
             config.update({'Cmd': self.service.cmd.split(',')})
         return config
-
 
     @api.one
     def status_get(self):
@@ -124,7 +120,7 @@ class DeviceService(models.Model):
     def stop(self):
         try:
             http_bridge.service_stop(dst=self.device.uid, timeout=30,
-                                      service_id=self.service.id)
+                                     service_id=self.service.id)
         except RPCError as e:
             raise Warning(str(e))
 
@@ -132,7 +128,7 @@ class DeviceService(models.Model):
     def restart(self):
         try:
             http_bridge.service_restart(dst=self.device.uid, timeout=60,
-                                      service_id=self.service.id)
+                                        service_id=self.service.id)
         except RPCError as e:
             raise Warning(str(e))
 
@@ -146,7 +142,6 @@ class DeviceLog(models.Model):
     log = fields.Char()
 
 
-
 class DevicePort(models.Model):
     _name = 'device_manager.device_port'
     _order = 'device_port'
@@ -157,4 +152,3 @@ class DevicePort(models.Model):
     host_port = fields.Integer(required=True, help="Port on docker host")
     protocol = fields.Selection(selection=(('udp', 'UDP'), ('tcp', 'TCP')),
                                 default='tcp', required=True)
-

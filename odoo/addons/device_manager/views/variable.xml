@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <data>
+        <!--Variables-->
+
+        <!--Variable form view-->
+        <record model="ir.ui.view" id="variable_form_view">
+            <field name="name">variable.form</field>
+            <field name="model">device_manager.variable</field>
+            <field name="arch" type="xml">
+                <form string="Variable Form">
+                    <sheet>
+                        <group>
+                            <field name="name"/>
+                            <field name="value"/>
+                        </group>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <!--Variable tree view-->
+        <record model="ir.ui.view" id="variable_tree_view">
+            <field name="name">variable.tree</field>
+            <field name="model">device_manager.variable</field>
+            <field name="arch" type="xml">
+                <tree string="Variable Tree">
+                    <field name="name"/>
+                    <field name="value"/>
+                </tree>
+            </field>
+        </record>
+
+        <!--Variable search view-->
+        <record model="ir.ui.view" id="variable_search_view">
+            <field name="name">variable.search</field>
+            <field name="model">device_manager.variable</field>
+            <field name="arch" type="xml">
+                <search>
+                    <field name="name"/>
+                </search>
+            </field>
+        </record>
+
+        <!--Variable-->
+        <record model="ir.actions.act_window" id="variable_list_action">
+            <field name="name">Variables</field>
+            <field name="res_model">device_manager.variable</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form</field>
+            <field name="help" type="html">
+                <p class="oe_view_nocontent_create">
+                    Create the first variable
+                </p>
+            </field>
+        </record>
+    </data>
+</odoo>

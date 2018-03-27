@@ -2,9 +2,8 @@ import logging
 from odoo import models, fields, api
 from tinyrpc.protocols.jsonrpc import JSONRPCProtocol
 from tinyrpc.transports.http import HttpPostClientTransport
-from tinyrpc.exc import  RPCError
+from tinyrpc.exc import RPCError
 from tinyrpc import RPCClient
-
 
 logger = logging.getLogger(__name__)
 
@@ -26,10 +25,10 @@ class Service(models.Model):
                                   column1='service1', column2='service2')
     environment = fields.Many2many(comodel_name='device_manager.variable')
     restart = fields.Selection(selection=(
-                                        ('no', 'No'), ('always', 'Always'),
-                                        ('on-failure', 'On Failure'),
-                                        ('unless-stopped', 'Unless-stopped')),
-                                default='on-failure')
+        ('no', 'No'), ('always', 'Always'),
+        ('on-failure', 'On Failure'),
+        ('unless-stopped', 'Unless-stopped')),
+        default='on-failure')
     cmd = fields.Char(string='Command')
     devices = fields.One2many(comodel_name='device_manager.device_service',
                               inverse_name='service')
@@ -37,13 +36,11 @@ class Service(models.Model):
     ports = fields.One2many(comodel_name='device_manager.service_port',
                             inverse_name='service')
 
-
     @api.one
     def _get_device_count(self):
         self.device_count = self.env[
             'device_manager.device_service'].search_count(
-                [('service', '=', self.id)])
-
+            [('service', '=', self.id)])
 
 
 class ServicePort(models.Model):
@@ -55,5 +52,3 @@ class ServicePort(models.Model):
     port = fields.Integer(required=True, help="Port on docker container")
     protocol = fields.Selection(selection=(('udp', 'UDP'), ('tcp', 'TCP')),
                                 default='tcp', required=True)
-
-

@@ -1,15 +1,18 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <odoo>
     <template id="docker_compose_yml" name="docker-compose.yml">
-version: '3'
+        version: '3'
 
-services:
-    <t t-foreach="services" t-as="service">
-    <t t-esc="service.name"/>:
-        image: <t t-esc="service.image"/>:<t t-esc="service.tag"/>
-        container_name: <t t-esc="service.name"/>
-        restart: <t t-esc="service.restart"/>        
-    </t>
+        services:
+        <t t-foreach="services" t-as="service">
+            <t t-esc="service.name"/>:
+            image:<t t-esc="service.image"/>:
+            <t t-esc="service.tag"/>
+            container_name:
+            <t t-esc="service.name"/>
+            restart:
+            <t t-esc="service.restart"/>
+        </t>
     </template>
 </odoo>
 
