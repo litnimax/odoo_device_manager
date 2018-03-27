@@ -18,8 +18,9 @@
         <!--Images menu-->
         <menuitem id="image_menu" name="Images" parent="device_manager_menu"
                   sequence="30" action="image_list_action"/>
-        <!--Variables menu-->
-        <menuitem id="variable_menu" name="Variables" parent="device_manager_menu"
-                  sequence="40" action="variable_list_action"/>
+        <!--service_environments menu-->
+        <menuitem id="service_environment_menu" name="Environment"
+                  parent="device_manager_menu"
+                  sequence="40" action="service_environment_list_action"/>
     </data>
 </odoo>

@@ -35,12 +35,13 @@ class Device(models.Model):
     supervisor_version = fields.Char()
     ip_address = fields.Char(string='IP Address')
     commit = fields.Char()
-    variables = fields.Many2many(comodel_name='device_manager.variable')
     notes = fields.Text()
     logs = fields.One2many(comodel_name='device_manager.device_log',
                            inverse_name='device')
 
     ports = fields.One2many(comodel_name='device_manager.device_port',
+                            inverse_name='device')
+    environment = fields.One2many(comodel_name='device_manager.device_environment',
                             inverse_name='device')
 
     @api.one
@@ -152,3 +153,23 @@ class DevicePort(models.Model):
     host_port = fields.Integer(required=True, help="Port on docker host")
     protocol = fields.Selection(selection=(('udp', 'UDP'), ('tcp', 'TCP')),
                                 default='tcp', required=True)
+
+
+
+class DeviceEnvironment(models.Model):
+    _name = 'device_manager.device_environment'
+    _order = 'name'
+
+    device = fields.Many2one(comodel_name='device_manager.device',
+                             ondelete='cascade')
+    name = fields.Char(required=True)
+    value = fields.Char()
+
+    _sql_constraints = [
+        (
+            'uniq_env',
+            'UNIQUE(name,value,device)',
+            _(u'This var is already defined for this device!')
+        )
+    ]
+

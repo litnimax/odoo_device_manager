@@ -12,7 +12,7 @@
             <field name="supervisor_version">1.8</field>
             <field name="ip_address">188.15.12.0</field>
             <field name="commit">fa4sd6</field>
-            <field name="variables" eval="[(6, False, [object3, object4, ])]"/>
+            <field name="environment" eval="[(6,False,[ref('object3'), ref('object4')])]"/>
             <field name="notes">some notes</field>
             <field name="logs"/>
         </record>

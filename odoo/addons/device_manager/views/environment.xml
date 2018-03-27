@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <data>
+        <!--service_environments-->
+
+        <!--service_environment form view-->
+        <record model="ir.ui.view" id="service_environment_form_view">
+            <field name="name">service_environment.form</field>
+            <field name="model">device_manager.service_environment</field>
+            <field name="arch" type="xml">
+                <form string="service_environment Form">
+                    <sheet>
+                        <group>
+                            <field name="name"/>
+                            <field name="value"/>
+                        </group>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <!--service_environment tree view-->
+        <record model="ir.ui.view" id="service_environment_tree_view">
+            <field name="name">service_environment.tree</field>
+            <field name="model">device_manager.service_environment</field>
+            <field name="arch" type="xml">
+                <tree string="service_environment Tree">
+                    <field name="name"/>
+                    <field name="value"/>
+                </tree>
+            </field>
+        </record>
+
+        <!--service_environment search view-->
+        <record model="ir.ui.view" id="service_environment_search_view">
+            <field name="name">service_environment.search</field>
+            <field name="model">device_manager.service_environment</field>
+            <field name="arch" type="xml">
+                <search>
+                    <field name="name"/>
+                </search>
+            </field>
+        </record>
+
+        <!--service_environment-->
+        <record model="ir.actions.act_window" id="service_environment_list_action">
+            <field name="name">service_environments</field>
+            <field name="res_model">device_manager.service_environment</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form</field>
+            <field name="help" type="html">
+                <p class="oe_view_nocontent_create">
+                    Create the first service_environment
+                </p>
+            </field>
+        </record>
+    </data>
+</odoo>

@@ -30,12 +30,12 @@
         'views/device.xml',
         'views/service.xml',
         'views/image.xml',
-        'views/variable.xml',
+        'views/environment.xml',
         'views/views.xml',        
     ],
     # only loaded in demonstration mode
     'demo': [
-        'demo/demo_variables.xml',
+        'demo/demo_environment.xml',
         'demo/demo_images.xml',
         'demo/demo_services.xml',
         'demo/demo_devices.xml',

@@ -75,9 +75,9 @@
                                     </field>
                                 </group>
                             </page>
-                            <page string="Variables">
-                                <field name="variables">
-                                    <tree string="Environment">
+                            <page string="Environment">
+                                <field name="environment">
+                                    <tree string="Environment" editable="top">
                                         <field name="name"/>
                                         <field name="value"/>
                                     </tree>

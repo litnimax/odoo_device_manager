@@ -16,7 +16,9 @@
                                 <field name="token"/>
                             </group>
                             <group>
-                                <field name="services" widget="many2many_tags"/>
+                                <group>
+                                    <field name="services" widget="many2many_tags"/>
+                                </group>
                             </group>
                         </group>
                     </sheet>

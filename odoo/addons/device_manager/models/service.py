@@ -23,7 +23,8 @@ class Service(models.Model):
     depends_on = fields.Many2many(comodel_name='device_manager.service',
                                   relation='device_manager_service_depends',
                                   column1='service1', column2='service2')
-    environment = fields.Many2many(comodel_name='device_manager.variable')
+    environment = fields.Many2many(
+                            comodel_name='device_manager.service_environment')
     restart = fields.Selection(selection=(
         ('no', 'No'), ('always', 'Always'),
         ('on-failure', 'On Failure'),
@@ -52,3 +53,12 @@ class ServicePort(models.Model):
     port = fields.Integer(required=True, help="Port on docker container")
     protocol = fields.Selection(selection=(('udp', 'UDP'), ('tcp', 'TCP')),
                                 default='tcp', required=True)
+
+
+class DeviceEnvironment(models.Model):
+    _name = 'device_manager.service_environment'
+    _order = 'name'
+
+    name = fields.Char(required=True)
+    value = fields.Char()
+

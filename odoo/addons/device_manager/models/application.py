@@ -36,9 +36,10 @@ class Application(models.Model):
         for s in services_to_add:
             logger.info('Adding service {} to {}'.format(s.name, device.uid))
             d_s = self.env['device_manager.device_service'].create({
-                'service': s.id,
-                'device': device.id,
-            })
+                    'service': s.id, 
+                    'device': device.id,
+                })
+            # Copy application ports to device service ports
             for port in s.ports:
                 self.env['device_manager.device_port'].create({
                     'device': device.id,
@@ -46,6 +47,15 @@ class Application(models.Model):
                     'host_port': port.port,
                     'protocol': port.protocol,
                 })
+            #
+            for env in s.environment:
+                self.env['device_manager.device_environment'].create({
+                    'device': device.id,
+                    'device_port': port.port,
+                    'host_port': port.port,
+                    'protocol': port.protocol,
+                })
+
         # Now delete removed services
         services_to_del = device_services - device.application.services
         logger.debug('Services to del: {}'.format([s.name for s in services_to_del]))

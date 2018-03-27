@@ -1,22 +1,22 @@
 <odoo>
     <data>
-        <record id="object0" model="device_manager.variable">
+        <record id="object0" model="device_manager.service_environment">
             <field name="name">GW_CONTACT_EMAIL</field>
             <field name="value">gruianichita@gmail.com</field>
         </record>
-        <record id="object1" model="device_manager.variable">
+        <record id="object1" model="device_manager.service_environment">
             <field name="name">GW_TYPE</field>
             <field name="value">linklabs-dev</field>
         </record>
-        <record id="object2" model="device_manager.variable">
+        <record id="object2" model="device_manager.service_environment">
             <field name="name">GW_REGION</field>
             <field name="value">EU</field>
         </record>
-        <record id="object3" model="device_manager.variable">
+        <record id="object3" model="device_manager.service_environment">
             <field name="name">GW_DESCRIPTION</field>
             <field name="value">First gate on linklabs-dev</field>
         </record>
-        <record id="object4" model="device_manager.variable">
+        <record id="object4" model="device_manager.service_environment">
             <field name="name">GW_FAKE_GPS</field>
             <field name="value">true</field>
         </record>
