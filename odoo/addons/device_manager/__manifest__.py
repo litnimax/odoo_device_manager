@@ -33,6 +33,10 @@
     ],
     # only loaded in demonstration mode
     'demo': [
-        #'demo/demo.xml',
+        'demo/demo_variables.xml',
+        'demo/demo_images.xml',
+        'demo/demo_services.xml',
+        'demo/demo_devices.xml',
+        'demo/demo_application.xml',
     ],
 }

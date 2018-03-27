@@ -1,0 +1,20 @@
+<odoo>
+    <data>
+        <record id="object0" model="device_manager.device">
+            <field name="uid">device_uid</field>
+            <!--<field name="application" eval="[(6, False, [object0, ])]"/>-->
+            <field name="services"/>
+            <field name="state">online</field>
+            <field name="username">demo_device_username1</field>
+            <field name="password">demo_device_password1</field>
+            <field name="last_online">03/25/2018 21:21:58</field>
+            <field name="host_os_version">1.2</field>
+            <field name="supervisor_version">1.8</field>
+            <field name="ip_address">188.15.12.0</field>
+            <field name="commit">fa4sd6</field>
+            <field name="variables" eval="[(6, False, [object3, object4, ])]"/>
+            <field name="notes">some notes</field>
+            <field name="logs"/>
+        </record>
+    </data>
+</odoo>

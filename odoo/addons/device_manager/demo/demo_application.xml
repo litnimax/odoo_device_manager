@@ -1,0 +1,8 @@
+<odoo>
+    <data>
+        <record id="object0" model="device_manager.application">
+            <field name="name">test</field>
+            <field name="token">test</field>
+        </record>
+    </data>
+</odoo>

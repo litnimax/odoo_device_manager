@@ -1,0 +1,25 @@
+<odoo>
+    <data>
+        <record id="object0" model="device_manager.service">
+            <field name="name">redis_last_version</field>
+            <field name="image">redis</field>
+            <field name="tag">latest</field>
+            <field name="cmd">["ls", "/lib"]</field>
+            <field name="restart">on-failure</field>
+            <field name="environment" eval="[(6, False, [object0, object3, ])]"/>
+            <!--<field name="devices" eval="[(4, False, [object0, ])]"/>-->
+            <!--<field name="devices" domain="[('id', 'in', 'service.id')]"/>-->
+        </record>
+        <record id="object1" model="device_manager.service">
+            <field name="name">odoo_last_version</field>
+            <field name="image">odoo</field>
+            <field name="tag">latest</field>
+            <field name="cmd">["ls", "/lib"]</field>
+            <field name="restart">on-failure</field>
+            <field name="environment" eval="[(6, False, [object3, object4, ])]"/>
+            <field name="depends_on" eval="[(6, False, [object0])]"/>
+            <!--<field name="devices" eval="[(4, False, [object0, ])]"/>-->
+        </record>
+
+    </data>
+</odoo>
