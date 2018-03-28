@@ -1,18 +1,18 @@
 <odoo>
     <data>
-        <record id="object0" model="device_manager.image">
+        <record id="demo_image_1" model="device_manager.image">
             <field name="name">redis</field>
         </record>
-        <record id="object1" model="device_manager.image">
+        <record id="demo_image_2" model="device_manager.image">
             <field name="name">busybox</field>
         </record>
-        <record id="object2" model="device_manager.image">
+        <record id="demo_image_3" model="device_manager.image">
             <field name="name">nginx</field>
         </record>
-        <record id="object3" model="device_manager.image">
+        <record id="demo_image_4" model="device_manager.image">
             <field name="name">mongo</field>
         </record>
-        <record id="object4" model="device_manager.image">
+        <record id="demo_image_5" model="device_manager.image">
             <field name="name">postgres</field>
         </record>
     </data>

@@ -1,8 +1,9 @@
 <odoo>
     <data>
-        <record id="object0" model="device_manager.application">
+        <record id="demo_app" model="device_manager.application">
             <field name="name">test</field>
             <field name="token">test</field>
+            <field name="services" eval="[(6,False, [ref('demo_service_1'),ref('demo_service_2')])]"/>
         </record>
     </data>
 </odoo>
