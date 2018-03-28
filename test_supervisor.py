@@ -6,16 +6,18 @@ import pytest
 import json
 from supervisor import Supervisor
 
+CONTAINER_ID = os.environ.get('CONTAINER_ID')
+
 test_app = {
     'services': {
         '1': {
-            'name': 'busybox',
-            'image': 'busybox',
-            'cmd': '["echo", "hello"]',
-            'environment': [],
-            'tag': 'latest',
+            'Name': 'busybox',
+            'Image': 'busybox',
+            'Cmd': '["echo", "hello"]',
+            'Environment': [],
+            'Tag': 'latest',
             'id': 1,
-            'container_id': 'fa86df75d855fd99a0dd504552c343791decb10b20186c63132dd6a2d6ad6344',
+            'container_id': CONTAINER_ID,
         }
     }
 }
@@ -25,7 +27,7 @@ async def test_service_status(event_loop):
     s = Supervisor(loop=event_loop)
     s.application = test_app
     res = await s.service_status(service_id=1)
-    assert res == 'exited'
+    assert res == 'starting'
     await s.stop()
 
 

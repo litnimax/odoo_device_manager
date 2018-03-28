@@ -123,7 +123,6 @@ class Supervisor(MQTTRPC):
         """
         logger.info('Stopping')
         await super().stop()        
-        sys.exit()
 
 
     async def services_log(self):
