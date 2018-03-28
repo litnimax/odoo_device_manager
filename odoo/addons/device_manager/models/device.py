@@ -45,15 +45,76 @@ class Device(models.Model):
                             inverse_name='device')
 
     @api.one
-    def application_start(self):
+    def application_restart(self):
         self.ensure_one()
         try:
-            result = http_bridge.application_start(dst=self.uid,
+            result = http_bridge.application_restart(dst=self.uid,
                                                    timeout=30, reload=True)
         except ConnectionError:
             raise Warning('Cannot connect to the bridge')
         except RPCError as e:
             raise Warning('{}'.format(e))
+
+
+    @api.model
+    def application_build(self, uid):
+        device = self.env['device_manager.device'].search(
+            [('uid', 'in', uid)])
+        if not device:
+            logger.warning('Device {} not found'.format(uid))
+            return {}
+        device.last_online = fields.Datetime.now()
+        # Add services
+        logger.debug('App services: {}'.format(
+            [k.name for k in device.application.services]))
+        device_services = self.env['device_manager.service'].search(
+            [('id', 'in', [k.service.id for k in device.services])])
+        logger.debug('Device services: {}'.format([k.name for k in device_services]))
+        services_to_add = device.application.services - device_services
+        logger.debug('Services to add: {}'.format([s.name for s in services_to_add]))
+        device_env = {}
+        for s in services_to_add:
+            logger.info('Adding service {} to {}'.format(s.name, device.uid))
+            d_s = self.env['device_manager.device_service'].create({
+                    'service': s.id, 
+                    'device': device.id,
+                })
+            # Copy application ports to device service ports
+            for port in s.ports:
+                self.env['device_manager.device_port'].create({
+                    'device': device.id,
+                    'device_port': port.port,
+                    'host_port': port.port,
+                    'protocol': port.protocol,
+                })
+            """
+            # First take service env
+            device_env.update(dict([(e.name, e.value) for e in s.environment]))
+            # Now take device env
+            device_env.update(dict([(e.name, e.value) for e in device.environment]))
+            # Now update device service env
+            for name, value in device_env.items():
+                self.env['device_manager.device_service_environment'].create({
+                    'device_service': d_s.id,
+                    'name': name,
+                    'value': value,
+                })
+            """
+        # Now delete removed services
+        services_to_del = device_services - device.application.services
+        logger.debug('Services to del: {}'.format([s.name for s in services_to_del]))
+        for s in services_to_del:
+            logger.info('Removing service {} from {}'.format(s.name, device.uid))
+            d_s = self.env['device_manager.device_service'].search([
+                ('device', '=', device.id), ('service', '=', s.id)])
+            d_s.unlink()
+        # Prepare the result dict
+        result = {'services': {}}
+        for dev_service in device.services:
+            result['services'][
+                dev_service.service.id] = dev_service.service_get()[0]
+        return result
+
 
 
 class DeviceService(models.Model):
@@ -79,11 +140,11 @@ class DeviceService(models.Model):
         self.ensure_one()
         # Merge environment for service and device service
         env = {}
-        env.update([{e.name, e.value} for e in self.service.environment])
+        env.update(dict([(e.name, e.value) for e in self.service.environment]))
         logger.debug('Service env: {}'.format(env))
         # Now take device env
-        env.update([{e.name, e.value} for e in self.device.environment])
-        logger.debug('Device env: {}'.format(env))
+        env.update(dict([(e.name, e.value) for e in self.device.environment]))
+        logger.debug('Service & device env: {}'.format(env))
         config = {
             'id': self.service.id,
             'Name': self.service.name,
@@ -104,6 +165,7 @@ class DeviceService(models.Model):
         self.ensure_one()
         try:
             self.status = http_bridge.service_status(dst=self.device.uid,
+                                                     timeout=2,
                                                      service_id=self.service.id)
         except RPCError:
             self.status = 'error'

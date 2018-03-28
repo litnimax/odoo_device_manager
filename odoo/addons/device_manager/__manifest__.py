@@ -31,14 +31,14 @@
         'views/service.xml',
         'views/image.xml',
         'views/environment.xml',
-        'views/views.xml',        
+        'views/views.xml',
     ],
     # only loaded in demonstration mode
     'demo': [
         'demo/demo_environment.xml',
-        'demo/demo_images.xml',
         'demo/demo_services.xml',
-        'demo/demo_devices.xml',
         'demo/demo_application.xml',
+        'demo/demo_devices.xml',
+        'demo/demo_images.xml',
     ],
 }

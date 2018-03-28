@@ -9,8 +9,8 @@
             <field name="arch" type="xml">
                 <form string="Device Form">
                     <header>
-                        <button name="application_start"
-                                type="object" string="Start App"/>
+                        <button name="application_restart"
+                                type="object" string="Restart App"/>
                     </header>
                     <sheet>
                         <notebook>
@@ -48,6 +48,20 @@
                                         <button icon="fa-square" type="object"
                                                 name="stop" help="Stop"/>
                                     </tree>
+                                    <form>
+                                        <sheet>
+                                            <group>
+                                                <group>
+                                                    <field name="service"/>
+                                                    <field name="device"/>
+                                                </group>
+                                                <group>
+                                                    <field name="service_name"/>
+                                                    <field name="status"/>
+                                                </group>
+                                            </group>
+                                        </sheet>
+                                    </form>
                                 </field>
                             </page>
                             <page string="Network">

@@ -42,8 +42,8 @@ class Supervisor(MQTTRPC):
 
     async def application_load(self):
         application = await self.odoo.execute(
-                                            'device_manager.application',
-                                            'get_application_for_device', self.client_uid)
+                                            'device_manager.device',
+                                            'application_build', self.client_uid)
         logger.debug('Application: {}'.format(application))
         if not application:
             logger.error('Application is not set')
@@ -55,7 +55,7 @@ class Supervisor(MQTTRPC):
 
 
     @dispatcher.public
-    async def application_start(self, reload=False):
+    async def application_restart(self, reload=False):
         if reload:
             await self.application_load()
         await self.application_start_()
@@ -122,7 +122,8 @@ class Supervisor(MQTTRPC):
         We have to cancel all pending coroutines for clean exit.
         """
         logger.info('Stopping')
-        await super().stop()        
+        await super().stop()
+        self.loop.stop()
 
 
     async def services_log(self):
@@ -310,8 +311,6 @@ if __name__ == '__main__':
     loop.create_task(s.start())
     try:
         loop.run_forever()
-    except SystemExit:
-        pass
     finally:
         logger.info('Stopped')
-        loop.stop()
+        loop.close()
