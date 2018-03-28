@@ -1,5 +1,7 @@
+import json
 import logging
-from odoo import models, fields, api
+from odoo import models, fields, api, _
+from odoo.exceptions import Warning
 from tinyrpc.protocols.jsonrpc import JSONRPCProtocol
 from tinyrpc.transports.http import HttpPostClientTransport
 from tinyrpc.exc import RPCError
@@ -42,6 +44,14 @@ class Service(models.Model):
         self.device_count = self.env[
             'device_manager.device_service'].search_count(
             [('service', '=', self.id)])
+
+
+    @api.constrains('cmd')
+    def _check_cmd(self):
+        try:
+            json.loads(self.cmd)
+        except ValueError:
+            raise Warning(_('Cmd must be a json string!'))
 
 
 class ServicePort(models.Model):

@@ -1,3 +1,4 @@
+import json
 import logging
 from odoo import models, fields, api, _
 from odoo.exceptions import Warning
@@ -157,7 +158,7 @@ class DeviceService(models.Model):
                     '{}/{}'.format(p.device_port, p.protocol): [
                         {"HostPort": "{}".format(p.host_port)}]}})
         if self.service.cmd:
-            config.update({'Cmd': self.service.cmd.split(',')})
+            config.update({'Cmd': json.loads(self.service.cmd)})
         return config
 
     @api.one
