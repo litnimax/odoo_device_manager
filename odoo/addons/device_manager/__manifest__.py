@@ -31,9 +31,9 @@
         'views/service.xml',
         'views/image.xml',
         'views/environment.xml',
+        'views/device_log.xml',
         'views/views.xml',
         'views/settings.xml',
-        'views/device_log.xml',
         'data/settings.xml',
     ],
     # only loaded in demonstration mode
