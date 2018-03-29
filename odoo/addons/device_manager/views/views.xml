@@ -25,5 +25,8 @@
 
         <menuitem id="settings_menu" name="Settings"
                   parent="device_manager_menu" sequence="100"/>
+
+        <menuitem id="device_log_menu" name="Logs" parent="device_manager_menu"
+                  sequence="50" action="device_log_list_action"/>
     </data>
 </odoo>

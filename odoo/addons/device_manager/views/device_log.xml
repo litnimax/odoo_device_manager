@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <data>
+        <!--Logs-->
+
+        <!--Logs tree view-->
+        <record model="ir.ui.view" id="device_log_tree_view">
+            <field name="name">device_log.tree</field>
+            <field name="model">device_manager.device_log</field>
+            <field name="arch" type="xml">
+                <tree string="Logs Tree" create="false">
+                    <field name="device"/>
+                    <field name="service"/>
+                    <field name="log"/>
+                </tree>
+            </field>
+        </record>
+
+        <!--Logs search view-->
+        <record model="ir.ui.view" id="device_log_search_view">
+            <field name="name">device_log.search</field>
+            <field name="model">device_manager.device_log</field>
+            <field name="arch" type="xml">
+                <search>
+                    <field name="device"/>
+                    <field name="service"/>
+                    <field name="log"/>
+                </search>
+            </field>
+        </record>
+
+        <!--Log-->
+        <record model="ir.actions.act_window" id="device_log_list_action">
+            <field name="name">Logs</field>
+            <field name="res_model">device_manager.device_log</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,search</field>
+        </record>
+    </data>
+</odoo>
+
+
