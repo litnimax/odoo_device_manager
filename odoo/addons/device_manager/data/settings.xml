@@ -1,0 +1,9 @@
+<odoo><data>
+    
+    <function model="device_manager.settings" name="_set_param" eval="(
+        'mqtt_url','mqtt://broker')" />
+
+    <function model="device_manager.settings" name="_set_param" eval="(
+        'mqtt_rpc_bridge_url','http://http_bridge:8888')" />
+
+</data></odoo>

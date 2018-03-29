@@ -32,6 +32,8 @@
         'views/image.xml',
         'views/environment.xml',
         'views/views.xml',
+        'views/settings.xml',
+        'data/settings.xml',
     ],
     # only loaded in demonstration mode
     'demo': [

@@ -1,21 +1,12 @@
 import json
+from requests import ConnectionError
 import logging
 from odoo import models, fields, api, _
 from odoo.exceptions import Warning
-from requests import ConnectionError
-from tinyrpc.protocols.jsonrpc import JSONRPCProtocol
-from tinyrpc.transports.http import HttpPostClientTransport
 from tinyrpc.exc import RPCError
-from tinyrpc import RPCClient
+from .utils import MqttRpcBridge
 
 logger = logging.getLogger(__name__)
-
-rpc_client = RPCClient(
-    JSONRPCProtocol(),
-    HttpPostClientTransport('http://http_bridge:8888')
-)
-http_bridge = rpc_client.get_proxy()
-
 
 class Device(models.Model):
     _name = 'device_manager.device'
@@ -49,12 +40,14 @@ class Device(models.Model):
     def application_restart(self):
         self.ensure_one()
         try:
-            result = http_bridge.application_restart(dst=self.uid,
-                                                   timeout=30, reload=True)
+            mqtt_rpc_bridge = MqttRpcBridge(self)
+            result = mqtt_rpc_bridge.application_restart(dst=self.uid,
+                                                    timeout=30, reload=True)
         except ConnectionError:
             raise Warning('Cannot connect to the bridge')
         except RPCError as e:
             raise Warning('{}'.format(e))
+
 
 
     @api.model
@@ -165,7 +158,8 @@ class DeviceService(models.Model):
     def status_get(self):
         self.ensure_one()
         try:
-            self.status = http_bridge.service_status(dst=self.device.uid,
+            mqtt_rpc_bridge = MqttRpcBridge(self)
+            self.status = mqtt_rpc_bridge.service_status(dst=self.device.uid,
                                                      timeout=2,
                                                      service_id=self.service.id)
         except RPCError:
@@ -174,7 +168,8 @@ class DeviceService(models.Model):
     @api.one
     def start(self):
         try:
-            http_bridge.service_start(dst=self.device.uid, timeout=30,
+            mqtt_rpc_bridge = MqttRpcBridge(self)
+            mqtt_rpc_bridge.service_start(dst=self.device.uid, timeout=30,
                                       service_id=self.service.id)
         except RPCError as e:
             raise Warning(str(e))
@@ -182,7 +177,7 @@ class DeviceService(models.Model):
     @api.one
     def stop(self):
         try:
-            http_bridge.service_stop(dst=self.device.uid, timeout=30,
+            mqtt_rpc_bridge.service_stop(dst=self.device.uid, timeout=30,
                                      service_id=self.service.id)
         except RPCError as e:
             raise Warning(str(e))
@@ -190,7 +185,8 @@ class DeviceService(models.Model):
     @api.one
     def restart(self):
         try:
-            http_bridge.service_restart(dst=self.device.uid, timeout=60,
+            mqtt_rpc_bridge = MqttRpcBridge(self)
+            mqtt_rpc_bridge.service_restart(dst=self.device.uid, timeout=60,
                                         service_id=self.service.id)
         except RPCError as e:
             raise Warning(str(e))

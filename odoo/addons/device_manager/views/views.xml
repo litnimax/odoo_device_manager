@@ -22,5 +22,8 @@
         <menuitem id="service_environment_menu" name="Environment"
                   parent="device_manager_menu"
                   sequence="40" action="service_environment_list_action"/>
+
+        <menuitem id="settings_menu" name="Settings"
+                  parent="device_manager_menu" sequence="100"/>
     </data>
 </odoo>

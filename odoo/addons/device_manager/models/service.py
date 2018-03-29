@@ -1,19 +1,9 @@
 import json
 import logging
 from odoo import models, fields, api, _
-from odoo.exceptions import Warning
-from tinyrpc.protocols.jsonrpc import JSONRPCProtocol
-from tinyrpc.transports.http import HttpPostClientTransport
-from tinyrpc.exc import RPCError
-from tinyrpc import RPCClient
+from odoo.exceptions import Warning, ValidationError
 
 logger = logging.getLogger(__name__)
-
-rpc_client = RPCClient(
-    JSONRPCProtocol(),
-    HttpPostClientTransport('http://http_bridge:8888')
-)
-http_bridge = rpc_client.get_proxy()
 
 
 class Service(models.Model):
@@ -51,7 +41,7 @@ class Service(models.Model):
         try:
             json.loads(self.cmd)
         except ValueError:
-            raise Warning(_('Cmd must be a json string!'))
+            raise ValidationError(_('Cmd must be a json string!'))
 
 
 class ServicePort(models.Model):
