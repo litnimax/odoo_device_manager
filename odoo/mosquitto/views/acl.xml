@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo><data>
+
+    <record model="ir.ui.view" id="acl_list">
+        <field name="name">mosquitto acl list</field>
+        <field name="model">mosquitto.acl</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="username_id"/>
+                <field name="topic"/>
+                <field name="rw"/>
+            </tree>
+        </field>
+    </record>
+
+    <record model="ir.ui.view" id="acl_form">
+        <field name="name">mosquitto acl form</field>
+        <field name="model">mosquitto.acl</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="username_id" options="{'no_create': '1'}"/>
+                            <field name="rw"/>
+                            <field name="topic_id" options="{'no_create': '1'}"/>
+                            <field name="topic" string="Topic Set"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record model="ir.actions.act_window" id="acl_action">
+        <field name="name">ACL</field>
+        <field name="res_model">mosquitto.acl</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <menuitem name="ACL" id="acl_menu" parent="menu_root" sequence="10"
+              action="acl_action"/>
+
+
+    <record id="acl_access_search" model="ir.ui.view">
+        <field name="name">mosquitto.acl.search</field>
+        <field name="model">mosquitto.acl</field>
+        <field name="arch" type="xml">
+            <search>
+              <field name="username_id"/>
+              <field name="topic"/>
+            </search>
+        </field>
+    </record>
+
+</data></odoo>

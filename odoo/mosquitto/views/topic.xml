@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo><data>
+
+    <record model="ir.ui.view" id="topic_list">
+        <field name="name">mosquitto topic list</field>
+        <field name="model">mosquitto.topic</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="name"/>
+                <field name="description"/>
+            </tree>
+        </field>
+    </record>
+
+    <record model="ir.ui.view" id="topic_form">
+        <field name="name">mosquitto topic form</field>
+        <field name="model">mosquitto.topic</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="name"/>
+                            <field name="description"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record model="ir.actions.act_window" id="topic_action">
+        <field name="name">Topic</field>
+        <field name="res_model">mosquitto.topic</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <menuitem name="Topic" id="topic_menu" parent="menu_root" sequence="30"
+              action="topic_action"/>
+
+
+    <record id="topic_access_search" model="ir.ui.view">
+        <field name="name">mosquitto.topic.search</field>
+        <field name="model">mosquitto.topic</field>
+        <field name="arch" type="xml">
+            <search>
+              <field name="name"/>
+            </search>
+        </field>
+    </record>
+
+</data></odoo>

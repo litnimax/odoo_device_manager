@@ -1,0 +1,5 @@
+<odoo><data>
+    <record id="device_group" model="res.groups">
+        <field name="name">Devices group</field>
+    </record>
+</data></odoo>
