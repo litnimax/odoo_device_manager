@@ -48,7 +48,7 @@ async def test_service_start(event_loop):
 async def test_service_stop(event_loop):
     s = Supervisor(loop=event_loop)
     s.application = test_app
-    res = await s.service_stop(service_id=1)
+    res = await s.service_stop(service_id=2)
     assert res
     await s.stop()
 
