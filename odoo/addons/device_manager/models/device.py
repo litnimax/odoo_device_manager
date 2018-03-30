@@ -162,8 +162,9 @@ class DeviceService(models.Model):
             self.status = mqtt_rpc_bridge.service_status(dst=self.device.uid,
                                                      timeout=2,
                                                      service_id=self.service.id)
-        except RPCError:
+        except (RPCError, ConnectionError):
             self.status = 'error'
+
 
     @api.one
     def start(self):
