@@ -236,6 +236,7 @@ class Supervisor(MQTTRPC):
         finally:
             await docker.close()
 
+
     async def register(self):
         logger.info('Register')
         async with aiohttp.ClientSession() as session:
