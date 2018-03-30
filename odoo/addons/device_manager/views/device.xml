@@ -19,17 +19,8 @@
                                     <group>
                                         <field name="uid"/>
                                         <field name="application"/>
-                                        <field name="state"/>
                                         <field name="username"/>
                                         <field name="password"/>
-                                        <field name="notes"/>
-                                    </group>
-                                    <group>
-                                        <field name="last_online"/>
-                                        <field name="host_os_version"/>
-                                        <field name="supervisor_version"/>
-                                        <field name="ip_address"/>
-                                        <field name="commit"/>
                                     </group>
                                 </group>
                                 <group>
