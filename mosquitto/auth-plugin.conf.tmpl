@@ -1,0 +1,13 @@
+auth_plugin /usr/local/lib/auth-plug.so
+auth_opt_backends postgres,files
+
+auth_opt_host {{ default .Env.DB_HOST "db" }}
+auth_opt_user {{ default .Env.DB_USER "odoo" }}
+auth_opt_pass {{ default .Env.DB_PASSWORD "odoo" }}
+auth_opt_dbname {{ default .Env.DB_NAME "test" }}
+auth_opt_userquery SELECT pw FROM mosquitto_account WHERE username = $1 limit 1
+auth_opt_superquery SELECT COALESCE(COUNT(*),0) FROM mosquitto_account WHERE username = $1 AND is_super = '1'
+auth_opt_aclquery SELECT topic FROM mosquitto_acl WHERE (username = $1) AND rw >= $2
+
+auth_opt_password_file /etc/mosquitto/users
+auth_opt_acl_file /etc/mosquitto/acls

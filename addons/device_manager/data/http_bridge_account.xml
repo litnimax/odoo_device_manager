@@ -1,0 +1,12 @@
+<odoo><data>
+    <record id="http_bridge_account" model="mosquitto.account">
+        <field name="username">http_bridge</field>
+        <field name="reset_password">jdhm923KsNTS73HsnJ</field>
+    </record>
+
+    <record id="http_bridge_acl" model="mosquitto.acl">
+        <field name="username_id" ref="http_bridge_account"/>
+        <field name="topic">rpc/#</field>
+        <field name="rw">3</field>
+    </record>
+</data></odoo>

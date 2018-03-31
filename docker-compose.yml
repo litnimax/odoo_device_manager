@@ -6,11 +6,18 @@ volumes:
 
 services:
     broker:
-      image: woahbase/alpine-mosquitto
+      build:
+        context: mosquitto
+        dockerfile: Dockerfile 
       ports:
         - "1883:1883"
       volumes:
-        - ./broker/mosquitto.conf:/mosquitto/config/mosquitto.conf
+        - ./mosquitto/mosquitto.conf:/etc/mosquitto/mosquitto.conf
+      environment:
+        - DB=test
+        - DB_USER=odoo
+        - DB_PASSWORD=odoo
+        - DB_HOST=db
 
     odoo:
       build:
@@ -22,7 +29,8 @@ services:
         - "8069:8069"
       volumes:
         - "supervisor_odoo_data:/var/lib/odoo"
-        - "./odoo/addons:/mnt/extra-addons"
+        - "./addons/device_manager/:/mnt/extra-addons/device_manager/"
+        - "./mosquitto/addons/mosquitto/:/mnt/extra-addons/mosquitto/"
       command: ["odoo", "--workers=0", "--db-filter=test", "--database=test", "--log-level=debug"]
 
     db:
@@ -39,7 +47,7 @@ services:
         - HTTP_URL=http://odoo:8069/jsonrpc
         - HTTP_LISTEN_ADDRESS=0.0.0.0
         - HTTP_LISTEN_PORT=8888
-        - MQTT_URL=mqtt://broker
+        - MQTT_URL=mqtt://http_bridge:jdhm923KsNTS73HsnJ@broker
         - CLIENT_UID=odoo
         - DEBUG=1
         - MQTT_REPLY_TIMEOUT=60

@@ -1,0 +1,12 @@
+<odoo><data>
+    
+    <function model="device_manager.settings" name="_set_param" eval="(
+        'mqtt_host','localhost')" />
+
+    <function model="device_manager.settings" name="_set_param" eval="(
+        'mqtt_port','1883')" />
+
+    <function model="device_manager.settings" name="_set_param" eval="(
+        'mqtt_rpc_bridge_url','http://http_bridge:8888')" />
+
+</data></odoo>

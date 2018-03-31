@@ -6,7 +6,8 @@ USER root
 COPY odoo/requirements.txt /mnt/extra-addons
 RUN pip install -r requirements.txt
 
-COPY odoo/addons/ /mnt/extra-addons/
+COPY mosquitto/addons/mosquitto/ /mnt/extra-addons/mosquitto/
+COPY addons/device_manager/ /mnt/extra-addons/device_manager/
 
 USER odoo
 

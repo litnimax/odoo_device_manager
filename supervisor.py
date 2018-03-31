@@ -9,6 +9,8 @@ from datetime import datetime, timezone
 import json
 import logging
 import os
+import secrets
+import string
 import time
 import sys
 import yaml
@@ -38,6 +40,7 @@ class Supervisor(MQTTRPC):
         super().__init__(*args, **kwargs)
         self.odoo = OdooRPCProxy(self, 'odoo')
 
+
     async def application_load(self):
         application = await self.odoo.execute(
             'device_manager.device',
@@ -50,6 +53,7 @@ class Supervisor(MQTTRPC):
                 len(application['services'])))
             self.application = application
             return True
+
 
     @dispatcher.public
     async def application_restart(self, reload=False):
@@ -75,6 +79,7 @@ class Supervisor(MQTTRPC):
         finally:
             await docker.close()
 
+
     async def device_log(self, log, service_id=None):
         if not log:
             return
@@ -89,17 +94,53 @@ class Supervisor(MQTTRPC):
         except Exception as e:
             logger.exception(e)
 
+
+    async def device_register(self):
+        logger.info('Register')
+        # Generate a random password and pass it to the server to create accounts
+        password = ''.join(secrets.choice(
+            string.ascii_uppercase + string.ascii_lowercase + string.digits) \
+                for _ in range(20))
+        async with aiohttp.ClientSession() as session:
+            async with session.post(
+                    REGISTER_URL, json={
+                        'version': self.version,
+                        'token': REGISTER_TOKEN,
+                        'password': password,
+                        'uid': self.client_uid}) as resp:
+                logger.debug('Register response status {}'.format(resp.status))
+                data = await resp.json()
+                if 'error' in data:
+                    logger.error('Register error {}: {}'.format(
+                        data['error']['message'], data['error']['data']))
+                    return False
+                else:
+                    logger.debug('Register reponse {}'.format(data))                    
+                    self.settings = data['result']
+                    self.settings['password'] = password
+                    self.settings['username'] = self.client_uid
+                    await self.settings_save()
+                    return True
+
+
     async def start(self):
         logger.info('Start')
         await self.settings_load()
         if not self.settings:
             # Empty settings, try to register
-            if not await self.register():
+            if not await self.device_register():
                 logger.error('Cannot register device')
                 await self.stop()
+                return
+        # Start MQTT message loop
+        self.mqtt_url = 'mqtt://{username}:{password}@' \
+                        '{mqtt_host}:{mqtt_port}'.format(**self.settings)
+        self.loop.create_task(self.process_messages())
         # Init odoo connector
         try:
-            uid = await self.odoo.login(ODOO_DB, 'admin', 'admin')  # self.settings['username'],
+            uid = await self.odoo.login(ODOO_DB,
+                                        self.settings['username'],
+                                        self.settings['password'])
             # self.settings['password'])
             if await self.application_load():
                 await self.application_start_()
@@ -237,25 +278,6 @@ class Supervisor(MQTTRPC):
             await docker.close()
 
 
-    async def register(self):
-        logger.info('Register')
-        async with aiohttp.ClientSession() as session:
-            async with session.post(
-                    REGISTER_URL, json={
-                        'version': self.version,
-                        'token': REGISTER_TOKEN,
-                        'uid': self.client_uid}) as resp:
-                logger.debug('Register response status {}'.format(resp.status))
-                data = await resp.json()
-                if 'error' in data:
-                    logger.error('Register error {}: {}'.format(
-                        data['error']['message'], data['error']['data']))
-                    return False
-                else:
-                    logger.debug('Register reponse {}'.format(data))
-                    self.settings = data['result']
-                    await self.settings_save()
-                    return True
 
     async def settings_load(self):
         logger.debug('Load settings')
@@ -293,7 +315,6 @@ if __name__ == '__main__':
     logging.getLogger('hbmqtt').setLevel(level=logging.ERROR)
     loop = asyncio.get_event_loop()
     s = Supervisor(loop=loop)
-    loop.create_task(s.process_messages())
     loop.create_task(s.start())
     try:
         loop.run_forever()
