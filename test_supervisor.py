@@ -65,7 +65,7 @@ async def test_service_status(event_loop):
 @pytest.mark.asyncio
 async def test_register(event_loop):
     s = Supervisor(loop=event_loop)
-    res = await s.register()
+    res = await s.device_register()
     assert res == True
     await s.stop()
 

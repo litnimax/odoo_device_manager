@@ -21,15 +21,12 @@ class Device(models.Model):
                                   required=True)
     services = fields.One2many(comodel_name='device_manager.device_service',
                                inverse_name='device')
-    state = fields.Selection(selection=(
-        ('online', 'Online'),
-        ('offline', 'Offline'))
-    )
+    state = fields.Selection(selection=(('online', 'Online'), 
+                                        ('offline', 'Offline')),
+                             default='offline')
     last_online = fields.Datetime()
-    host_os_version = fields.Char()
     supervisor_version = fields.Char()
     ip_address = fields.Char(string='IP Address')
-    commit = fields.Char()
     notes = fields.Text()
     logs = fields.One2many(comodel_name='device_manager.device_log',
                            inverse_name='device')
@@ -61,11 +58,31 @@ class Device(models.Model):
         # mosquitto fields
         vals['username'] = vals['uid']        
         device = super(Device, self).create(vals)
-        # Create ACL to accept rpc requests
+        # Create ACL to make rpc requests
         self.env['mosquitto.acl'].sudo().create({
                               'username_id': device.mqtt_account.id,
-                              'topic': 'rpc/#',
-                              'rw': '3'})
+                              'topic': 'rpc/+/{}'.format(device.uid),
+                              'rw': '2'})
+        # Read reply
+        self.env['mosquitto.acl'].sudo().create({
+                              'username_id': device.mqtt_account.id,
+                              'topic': 'rpc/+/{}/reply'.format(device.uid),
+                              'rw': '1'})
+        # ACL for receiving RPC
+        self.env['mosquitto.acl'].sudo().create({
+                              'username_id': device.mqtt_account.id,
+                              'topic': 'rpc/{}/+'.format(device.uid),
+                              'rw': '1'})
+        # Write a reply
+        self.env['mosquitto.acl'].sudo().create({
+                              'username_id': device.mqtt_account.id,
+                              'topic': 'rpc/{}/+/reply'.format(device.uid),
+                              'rw': '2'})
+        # Will message published by broker on behalf of client
+        self.env['mosquitto.acl'].sudo().create({
+                              'username_id': device.mqtt_account.id,
+                              'topic': 'will/{}'.format(device.uid),
+                              'rw': '2'})
         return device
 
 

@@ -13,7 +13,6 @@ import secrets
 import string
 import time
 import sys
-import yaml
 from aiodocker import Docker
 from mqttrpc import MQTTRPC, OdooRPCProxy, dispatcher
 from tinyrpc.exc import RPCError
@@ -35,9 +34,23 @@ class Supervisor(MQTTRPC):
     application = {}
     scheduler = None
     last_logs = 0
+    config = {
+        'reconnect_retries': 10000,
+        'will': {},
+        }
+
 
     def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+        will_params = {
+            'state': 'offline'
+        }
+        self.config['will'].update({
+            'topic': 'will/{}'.format(super().client_uid),
+            'message': json.dumps(will_params).encode(),
+            'qos': 0x02,
+            'retain': False,
+        })
+        super().__init__(*args, config=self.config, **kwargs)        
         self.odoo = OdooRPCProxy(self, 'odoo')
 
 
@@ -141,7 +154,7 @@ class Supervisor(MQTTRPC):
             uid = await self.odoo.login(ODOO_DB,
                                         self.settings['username'],
                                         self.settings['password'])
-            # self.settings['password'])
+            await self.status_update_()
             if await self.application_load():
                 await self.application_start_()
         except RPCError as e:
@@ -156,8 +169,12 @@ class Supervisor(MQTTRPC):
         We have to cancel all pending coroutines for clean exit.
         """
         logger.info('Stopping')
+        # Set status to off
+        await self.odoo.write('device_manager.device', 
+                              self.settings['device_id'], 
+                              {'state': 'offline'})
         await super().stop()
-        self.loop.stop()
+
 
     async def services_log(self):
         if not self.application.get('services'):
@@ -302,6 +319,18 @@ class Supervisor(MQTTRPC):
             await file.write(json.dumps(self.settings))
             return True
 
+
+    async def status_update_(self):
+        ip = await self.ip_address_get()
+        await self.odoo.write('device_manager.device', 
+                              self.settings['device_id'], 
+                              {'state': 'online',
+                               'supervisor_version': self.version,
+                                'last_online': datetime.now(
+                                            ).strftime('%Y-%m-%d %H:%M:%S'),
+                                'ip_address': ip})
+
+
     @staticmethod
     async def ip_address_get():
         url = "https://ident.me"
@@ -320,4 +349,3 @@ if __name__ == '__main__':
         loop.run_forever()
     finally:
         logger.info('Stopped')
-        loop.close()

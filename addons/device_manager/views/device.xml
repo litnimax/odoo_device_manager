@@ -21,6 +21,11 @@
                                         <field name="application"/>
                                         <field name="set_password" help="Set to change password"/>
                                     </group>
+                                    <group>
+                                        <field name="state" readonly="1"/>
+                                        <field name="ip_address" readonly="1"/>
+                                        <field name="supervisor_version" readonly="1"/>
+                                    </group>
                                 </group>
                                 <group>
                                     <field name="notes"/>
@@ -123,10 +128,8 @@
                     <field name="application"/>
                     <field name="state"/>
                     <field name="last_online"/>
-                    <field name="host_os_version"/>
                     <field name="supervisor_version"/>
                     <field name="ip_address"/>
-                    <field name="commit"/>
                 </tree>
             </field>
         </record>
@@ -149,7 +152,7 @@
             <field name="name">Devices</field>
             <field name="res_model">device_manager.device</field>
             <field name="view_type">form</field>
-            <field name="view_mode">tree,form</field>
+            <field name="view_mode">tree,form,graph</field>
             <field name="help" type="html">
                 <p class="oe_view_nocontent_create">
                     Create the first device

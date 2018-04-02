@@ -44,6 +44,21 @@ class Service(models.Model):
             raise ValidationError(_('Cmd must be a json string!'))
 
 
+    @api.multi
+    def write(self, vals):
+        res = super(Service, self).write(vals)
+        rec = self
+        if res and ('image' in vals or 'tag' in vals):
+            for self in rec:                
+                try:
+                    for device in self.devices:
+                        device.application_restart()
+                except Exception as e:
+                    logger.exception(e)
+        return res
+
+
+
 class ServicePort(models.Model):
     _name = 'device_manager.service_port'
     _order = 'port'
