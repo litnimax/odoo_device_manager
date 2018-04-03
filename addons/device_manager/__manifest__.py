@@ -24,8 +24,10 @@
     'application': True,
     # always loaded
     'data': [
-        'security/device.xml',
-        'security/ir.model.access.csv',
+        'security/device/device.xml',
+        'security/device/ir.model.access.csv',
+        'security/device_admin/device_admin.xml',
+        'security/device_admin/ir.model.access.csv',
         'views/application.xml',
         'views/device.xml',
         'views/service.xml',

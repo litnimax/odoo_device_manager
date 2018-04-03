@@ -1,0 +1,95 @@
+<odoo>
+    <data>
+        <record id="device_group" model="res.groups">
+            <field name="name">Devices group</field>
+        </record>
+
+        <record model="ir.rule" id="device_rule">
+            <field name="name">Device rule</field>
+            <field name="model_id" ref="model_device_manager_device"/>
+            <field name="groups" eval="[(6,0, [ref('device_group')])]"/>
+            <field name="domain_force">[('user','=', user.id)]</field>
+            <field name="perm_create" eval="1"/>
+            <field name="perm_write" eval="1"/>
+            <field name="perm_read" eval="1"/>
+            <field name="perm_unlink" eval="1"/>
+        </record>
+
+        <record model="ir.rule" id="application_rule">
+            <field name="name">Application rule</field>
+            <field name="model_id" ref="model_device_manager_application"/>
+            <field name="groups" eval="[(6,0, [ref('device_group')])]"/>
+            <field name="domain_force">[('devices','in', user.device.id)]</field>
+            <field name="perm_create" eval="1"/>
+            <field name="perm_write" eval="1"/>
+            <field name="perm_read" eval="1"/>
+            <field name="perm_unlink" eval="1"/>
+        </record>
+
+        <record model="ir.rule" id="service_rule">
+            <field name="name">Service rule</field>
+            <field name="model_id" ref="model_device_manager_service"/>
+            <field name="groups" eval="[(6,0, [ref('device_group')])]"/>
+            <field name="domain_force">[('devices','in', user.device.id)]</field>
+            <field name="perm_create" eval="1"/>
+            <field name="perm_write" eval="1"/>
+            <field name="perm_read" eval="1"/>
+            <field name="perm_unlink" eval="1"/>
+        </record>
+
+        <record model="ir.rule" id="device_service_rule">
+            <field name="name">Device service rule</field>
+            <field name="model_id" ref="model_device_manager_device_service"/>
+            <field name="groups" eval="[(6,0, [ref('device_group')])]"/>
+            <field name="domain_force">[('device','=', user.device.id)]</field>
+            <field name="perm_create" eval="1"/>
+            <field name="perm_write" eval="1"/>
+            <field name="perm_read" eval="1"/>
+            <field name="perm_unlink" eval="1"/>
+        </record>
+
+        <record model="ir.rule" id="service_port_rule">
+            <field name="name">Service port rule</field>
+            <field name="model_id" ref="model_device_manager_service_port"/>
+            <field name="groups" eval="[(6,0, [ref('device_group')])]"/>
+            <field name="domain_force">[('service','=', user.ports.id)]</field>
+            <field name="perm_create" eval="1"/>
+            <field name="perm_write" eval="1"/>
+            <field name="perm_read" eval="1"/>
+            <field name="perm_unlink" eval="1"/>
+        </record>
+
+        <record model="ir.rule" id="device_environment_rule">
+            <field name="name">Device environment rule</field>
+            <field name="model_id" ref="model_device_manager_device_environment"/>
+            <field name="groups" eval="[(6,0, [ref('device_group')])]"/>
+            <field name="domain_force">[('device','=', user.device.id)]</field>
+            <field name="perm_create" eval="1"/>
+            <field name="perm_write" eval="1"/>
+            <field name="perm_read" eval="1"/>
+            <field name="perm_unlink" eval="1"/>
+        </record>
+
+        <record model="ir.rule" id="device_port_rule">
+            <field name="name">Device port rule</field>
+            <field name="model_id" ref="model_device_manager_device_port"/>
+            <field name="groups" eval="[(6,0, [ref('device_group')])]"/>
+            <field name="domain_force">[('device','=', user.device.id)]</field>
+            <field name="perm_create" eval="1"/>
+            <field name="perm_write" eval="1"/>
+            <field name="perm_read" eval="1"/>
+            <field name="perm_unlink" eval="1"/>
+        </record>
+
+        <record model="ir.rule" id="device_log_rule">
+            <field name="name">Device log rule</field>
+            <field name="model_id" ref="model_device_manager_device_log"/>
+            <field name="groups" eval="[(6,0, [ref('device_group')])]"/>
+            <field name="domain_force">[('device','=', user.device.id)]</field>
+            <field name="perm_create" eval="1"/>
+            <field name="perm_write" eval="1"/>
+            <field name="perm_read" eval="1"/>
+            <field name="perm_unlink" eval="1"/>
+        </record>
+    </data>
+</odoo>
