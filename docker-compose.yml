@@ -51,3 +51,17 @@ services:
         - CLIENT_UID=odoo
         - DEBUG=1
         - MQTT_REPLY_TIMEOUT=60
+
+    manager:
+      build:
+        context: .
+        dockerfile: manager/Dockerfile
+      environment:
+        - ODOO_DB=test
+        - ODOO_USER=admin
+        - ODOO_PASSWORD=admin
+        - CLIENT_UID=manager
+        - MQTT_URL=mqtt://manager:djh37Ha0hs3jiwHJ73@broker
+      volumes:
+        - ./manager.py:/app/manager.py
+  

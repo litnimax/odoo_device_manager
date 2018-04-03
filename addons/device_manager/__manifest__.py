@@ -35,7 +35,7 @@
         'views/views.xml',
         'views/settings.xml',
         'data/settings.xml',
-        'data/http_bridge_account.xml',
+        'data/mqtt_accounts.xml',
     ],
     # only loaded in demonstration mode
     'demo': [

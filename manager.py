@@ -1,32 +1,18 @@
 #!/usr/bin/env python3
-#import aiojobs
-#import aiofiles
-#import aiohttp
 import asyncio
 from hbmqtt.mqtt.constants import QOS_2
-#import aiodocker
-#from aiodocker.exceptions import DockerError
-#from datetime import datetime, timezone
 import json
 import logging
 import os
-#import secrets
-#import string
-#import time
-#import sys
-#import yaml
-#from aiodocker import Docker
 from mqttrpc import MQTTRPC, OdooRPCProxy, dispatcher
 from tinyrpc.exc import RPCError
 
 logger = logging.getLogger(__name__)
-#logging.getLogger('aiohttp-json-rpc.client').setLevel(level=logging.DEBUG)
 
 ODOO_DB = os.environ.get('ODOO_DB', 'test')
 ODOO_USER = 'admin'
 ODOO_PASSWORD = 'admin'
-# Every seconds lookup logs and send to the cloud
-UPDATE_DEVICES_INTERVAL = int(os.environ.get('LOG_INTERVAL', '120'))
+UPDATE_DEVICES_INTERVAL = int(os.environ.get('UPDATE_DEVICES_INTERVAL', '120'))
 
 class Manager(MQTTRPC):
 
@@ -48,7 +34,6 @@ class Manager(MQTTRPC):
 
     async def on_message(self, message):
         if message.topic.startswith('will/'):
-            print('Message: ', message.topic)
             uid = message.topic.split('/')[1]
             device_id = await self.odoo.search(
                                 'device_manager.device', [('uid','=', uid)])
