@@ -170,9 +170,13 @@ class Supervisor(MQTTRPC):
         """
         logger.info('Stopping')
         # Set status to off
-        await self.odoo.write('device_manager.device', 
-                              self.settings['device_id'], 
-                              {'state': 'offline'})
+        if self._connected_state.is_set():
+            try:
+                await self.odoo.write('device_manager.device', 
+                                      self.settings['device_id'], 
+                                      {'state': 'offline'})
+            except RPCError:
+                logger.warning('Could not send last will message')
         await super().stop()
 
 
@@ -316,7 +320,7 @@ class Supervisor(MQTTRPC):
                 os.path.join(
                     os.path.dirname(__file__),
                     'settings.json'), 'w') as file:
-            await file.write(json.dumps(self.settings))
+            await file.write(json.dumps(self.settings, indent=2, sort_keys=True))
             return True
 
 

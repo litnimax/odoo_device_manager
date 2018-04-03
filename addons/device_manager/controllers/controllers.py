@@ -36,10 +36,16 @@ class Container(http.Controller):
             device = http.request.env['device_manager.device'].register(app,
                                                     http.request.jsonrequest)
         return {
-            'mqtt_host': http.request.env['device_manager.settings']._get_param(
-                                                                    'mqtt_host'),
-            'mqtt_port': http.request.env['device_manager.settings']._get_param(
-                                                                    'mqtt_port'),
+            'mqtt_host': http.request.env[
+                        'device_manager.settings']._get_param('mqtt_host'),
+            'mqtt_port': http.request.env[
+                        'device_manager.settings']._get_param('mqtt_port'),
+            'cafile': http.request.env[
+                        'device_manager.settings']._get_param('cafile'),
+            'capath': http.request.env[
+                        'device_manager.settings']._get_param('capath'),
+            'cadata': http.request.env[
+                        'device_manager.settings']._get_param('cadata'),
             'device_id': device.id,
         }
 

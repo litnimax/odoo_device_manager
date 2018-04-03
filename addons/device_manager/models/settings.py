@@ -6,7 +6,8 @@ from odoo.exceptions import ValidationError, Warning
 
 logger = logging.getLogger(__name__)
 
-PARAMS = ['mqtt_host', 'mqtt_port', 'mqtt_rpc_bridge_url']
+PARAMS = ['mqtt_host', 'mqtt_port', 'mqtt_rpc_bridge_url',
+          'cafile', 'capath', 'cadata']
 
 class DeviceManagerSettings(models.TransientModel):
     _inherit = 'res.config.settings'
@@ -17,6 +18,12 @@ class DeviceManagerSettings(models.TransientModel):
     mqtt_port = fields.Char(required=True, string='MQTT Port')
     mqtt_rpc_bridge_url = fields.Char(required=True,
                                       string='MQTT RPC Bridge URL')
+    cafile = fields.Text(help='Server certificate authority file',
+                         string='CA File') 
+    capath = fields.Text(help='server certificate authority path', 
+                         string='CA Path')    
+    cadata =fields.Text(help='server certificate authority data',
+                        string='CA Data')
 
     def set_params(self):
         for field_name in PARAMS:
@@ -38,7 +45,7 @@ class DeviceManagerSettings(models.TransientModel):
     def _get_param(self, param):
         param = 'device_manager.' + param
         result = self.env['ir.config_parameter'].get_param(param)
-        logger.debug('Param {} = {}'.format(param, result))
+        logger.debug(u'Param {} = {}'.format(param, result))
         return result
 
 

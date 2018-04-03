@@ -16,6 +16,16 @@ class Application(models.Model):
     devices = fields.One2many(comodel_name='device_manager.device',
                               inverse_name='application')
 
+
     def generate_token(self):
         return uuid.uuid4().hex
 
+
+    @api.multi
+    def write(self, vals):
+        if 'services' in vals:        
+            for self in self:
+                super(Application, self).write(vals)
+                for device in self.devices:
+                    device.application_restart()
+        return True

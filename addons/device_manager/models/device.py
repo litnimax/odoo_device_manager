@@ -177,7 +177,7 @@ class Device(models.Model):
         logger.debug('Services to del: {}'.format([s.name for s in services_to_del]))
         for s in services_to_del:
             logger.info('Removing service {} from {}'.format(s.name, device.uid))
-            d_s = self.env['device_manager.device_service'].search([
+            d_s = self.env['device_manager.device_service'].sudo().search([
                 ('device', '=', device.id), ('service', '=', s.id)])
             d_s.unlink()
         # Prepare the result dict

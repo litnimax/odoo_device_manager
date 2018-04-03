@@ -17,6 +17,11 @@
                             <field name="mqtt_port"/>
                             <field name="mqtt_rpc_bridge_url"/>
                         </group>
+                        <group string="Secured Connection">
+                            <field name="cafile"/>
+                            <field name="capath"/>
+                            <field name="cadata"/>
+                        </group>
                     </group>
             </form>
         </field>
