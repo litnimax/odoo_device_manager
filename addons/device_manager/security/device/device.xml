@@ -48,31 +48,9 @@
             <field name="perm_unlink" eval="1"/>
         </record>
 
-        <record model="ir.rule" id="service_port_rule">
-            <field name="name">Service port rule</field>
-            <field name="model_id" ref="model_device_manager_service_port"/>
-            <field name="groups" eval="[(6,0, [ref('device_group')])]"/>
-            <field name="domain_force">[('service','=', user.ports.id)]</field>
-            <field name="perm_create" eval="1"/>
-            <field name="perm_write" eval="1"/>
-            <field name="perm_read" eval="1"/>
-            <field name="perm_unlink" eval="1"/>
-        </record>
-
         <record model="ir.rule" id="device_environment_rule">
             <field name="name">Device environment rule</field>
             <field name="model_id" ref="model_device_manager_device_environment"/>
-            <field name="groups" eval="[(6,0, [ref('device_group')])]"/>
-            <field name="domain_force">[('device','=', user.device.id)]</field>
-            <field name="perm_create" eval="1"/>
-            <field name="perm_write" eval="1"/>
-            <field name="perm_read" eval="1"/>
-            <field name="perm_unlink" eval="1"/>
-        </record>
-
-        <record model="ir.rule" id="device_port_rule">
-            <field name="name">Device port rule</field>
-            <field name="model_id" ref="model_device_manager_device_port"/>
             <field name="groups" eval="[(6,0, [ref('device_group')])]"/>
             <field name="domain_force">[('device','=', user.device.id)]</field>
             <field name="perm_create" eval="1"/>
