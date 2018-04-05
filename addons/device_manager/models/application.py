@@ -27,5 +27,5 @@ class Application(models.Model):
             for self in self:
                 super(Application, self).write(vals)
                 for device in self.devices:
-                    device.application_restart()
+                    device.application_restart(one_way=True)
         return True

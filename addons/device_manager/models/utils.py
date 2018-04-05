@@ -9,7 +9,7 @@ from tinyrpc import RPCClient
 logger = logging.getLogger(__name__)
 
 class MqttRpcBridge(object):
-    def __init__(self, obj, wrap_exceptions=True):
+    def __init__(self, obj, wrap_exceptions=True, one_way=False):
         url = obj.env['device_manager.settings']._get_param(
                                                     'mqtt_rpc_bridge_url')
         logger.debug('HTTP bridge url {}'.format(url))
@@ -17,7 +17,7 @@ class MqttRpcBridge(object):
             JSONRPCProtocol(),
             HttpPostClientTransport(url)
         )
-        self.proxy = rpc_client.get_proxy()
+        self.proxy = rpc_client.get_proxy(one_way=one_way)
 
 
     def __getattr__(self, name):
