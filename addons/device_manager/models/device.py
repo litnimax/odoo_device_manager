@@ -128,10 +128,10 @@ class Device(models.Model):
 
 
     @api.one
-    def application_restart(self):
+    def application_restart(self, one_way=False):
         self.ensure_one()
         try:
-            mqtt_rpc_bridge = MqttRpcBridge(self)
+            mqtt_rpc_bridge = MqttRpcBridge(self, one_way=one_way)
             result = mqtt_rpc_bridge.application_restart(dst=self.uid,
                                                     timeout=30, reload=True)
         except ConnectionError:
@@ -143,7 +143,7 @@ class Device(models.Model):
 
     @api.model
     def application_build(self, uid):
-        device = self.env['device_manager.device'].search(
+        device = self.env['device_manager.device'].sudo().search(
             [('uid', 'in', uid)])
         if not device:
             logger.warning('Device {} not found'.format(uid))
@@ -152,7 +152,7 @@ class Device(models.Model):
         # Add services
         logger.debug('App services: {}'.format(
             [k.name for k in device.application.services]))
-        device_services = self.env['device_manager.service'].search(
+        device_services = self.env['device_manager.service'].sudo().search(
             [('id', 'in', [k.service.id for k in device.services])])
         logger.debug('Device services: {}'.format([k.name for k in device_services]))
         services_to_add = device.application.services - device_services
@@ -219,17 +219,38 @@ class DeviceService(models.Model):
         logger.debug('Service & device env: {}'.format(env))
         config = {
             'id': self.service.id,
-            'Name': self.service.name,
-            'Image': '{}:{}'.format(self.service.image, self.service.tag),
-            'Env': ['{}={}'.format(k,v) for k,v in env.items()],
-        }
+            'name': self.service.name,
+            'image': {
+                'name': '{}:{}'.format(self.service.image, self.service.tag),
+                },
+            'container': {
+                'Env': ['{}={}'.format(k,v) for k,v in env.items()]
+                },
+            }
+        # Set image repository authentication
+        if self.service.auth_type == 'user_pass':
+            config['image']['auth'] = {
+                'username': self.service.auth_username,
+                'password': self.service.auth_password,
+            }
+        elif self.service.auth_type == 'token':
+            config['image']['auth'] = self.service.auth_token
+        else:
+            config['image']['auth'] = None
+        # Set repository address if present
+        if self.service.repository:
+            config['image'].update({
+                'repository': self.service.repository if \
+                    self.service.repository.endswith('/') else \
+                        self.service.repository + '/'
+            })
         for p in self.device.ports:
-            config.update({
+            config['container'].update({
                 'PortBindings': {
                     '{}/{}'.format(p.device_port, p.protocol): [
                         {"HostPort": "{}".format(p.host_port)}]}})
         if self.service.cmd:
-            config.update({'Cmd': json.loads(self.service.cmd)})
+            config['container'].update({'Cmd': json.loads(self.service.cmd)})
         return config
 
     @api.one

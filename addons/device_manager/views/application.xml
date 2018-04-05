@@ -12,7 +12,7 @@
         <record id="application_services_action" model="ir.actions.act_window">
             <field name="name">Services</field>
             <field name="res_model">device_manager.service</field>
-            <!--<field name="domain"></field>-->
+            <field name="domain">[('applications','=', active_id)]</field>
         </record>
 
 
