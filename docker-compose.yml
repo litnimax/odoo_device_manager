@@ -11,6 +11,7 @@ services:
         dockerfile: Dockerfile 
       ports:
         - "1883:1883"
+        - "8883:8883"
       volumes:
         - ./mosquitto/mosquitto.conf:/etc/mosquitto/mosquitto.conf
       environment:

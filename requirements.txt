@@ -1,4 +1,5 @@
 aiodocker
 aiojobs
 aiofiles
+git+https://github.com/strufkin/hbmqtt.git
 git+https://github.com/litnimax/python-mqttrpc.git
