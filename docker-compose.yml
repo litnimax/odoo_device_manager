@@ -14,6 +14,8 @@ services:
         - "8883:8883"
       volumes:
         - ./mosquitto/mosquitto.conf:/etc/mosquitto/mosquitto.conf
+        - ./mosquitto/certs/http-key.pem:/etc/mosquitto/http-key.pem
+        - ./mosquitto/certs/http.pem:/etc/mosquitto/http.pem
       environment:
         - DB=test
         - DB_USER=odoo
