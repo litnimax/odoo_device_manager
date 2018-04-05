@@ -68,8 +68,8 @@ class Service(models.Model):
         if res:
             for self in self:
                 try:
-                    for device in self.devices:
-                        device.application_restart(one_way=True)
+                    for d_s in self.devices:
+                        d_s.device.application_restart(one_way=True)
                 except Exception as e:
                     logger.exception(e)
         return res
