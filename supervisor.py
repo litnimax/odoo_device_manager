@@ -132,6 +132,9 @@ class Supervisor(MQTTRPC):
                     self.settings = data['result']
                     self.settings['password'] = password
                     self.settings['username'] = self.client_uid
+                    if self.settings.get('broker',{}).get('cafile',None):
+                        await self.cafile_save(self.settings['broker']['cafile'])
+                        self.settings['broker'].update({'cafile': 'cafile.pem'})
                     await self.settings_save()
                     return True
 
@@ -146,8 +149,6 @@ class Supervisor(MQTTRPC):
                 await self.stop()
                 return
         # Start MQTT message loop
-        self.mqtt_url = 'mqtt://{username}:{password}@' \
-                        '{mqtt_host}:{mqtt_port}'.format(**self.settings)
         self.loop.create_task(self.process_messages())
         # Init odoo connector
         try:
@@ -310,6 +311,7 @@ class Supervisor(MQTTRPC):
                 settings = json.loads(await file.read())
                 logger.debug('Loaded {}'.format(settings))
                 self.settings = settings.copy()
+                self.config['broker'] = self.settings['broker']
                 return True
         except FileNotFoundError:
             logger.info('settings.json not found')
@@ -341,6 +343,16 @@ class Supervisor(MQTTRPC):
         async with aiohttp.ClientSession() as session:
             async with session.get(url) as response:
                 return await response.text()
+
+
+    async def cafile_save(self, cafile_data=None):
+        logger.debug('Save CAfile')
+        async with aiofiles.open(
+                os.path.join(
+                    os.path.dirname(__file__),
+                    'cafile.pem'), 'w') as file:
+            await file.write(cafile_data)
+            return True
 
 
 if __name__ == '__main__':
