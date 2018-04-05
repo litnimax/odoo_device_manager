@@ -14,6 +14,8 @@
     'application': True,
     'qweb': [],
     'data': [
+        'security/mqtt_admin.xml',
+        'security/ir.model.access.csv',
         'views/menu.xml',
         'views/topic.xml',
         'views/account.xml',
