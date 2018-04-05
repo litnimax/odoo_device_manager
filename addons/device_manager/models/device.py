@@ -224,6 +224,7 @@ class DeviceService(models.Model):
                 'name': '{}:{}'.format(self.service.image, self.service.tag),
                 },
             'container': {
+                'Image': '{}:{}'.format(self.service.image, self.service.tag),
                 'Env': ['{}={}'.format(k,v) for k,v in env.items()]
                 },
             }
@@ -235,8 +236,6 @@ class DeviceService(models.Model):
             }
         elif self.service.auth_type == 'token':
             config['image']['auth'] = self.service.auth_token
-        else:
-            config['image']['auth'] = None
         # Set repository address if present
         if self.service.repository:
             config['image'].update({
