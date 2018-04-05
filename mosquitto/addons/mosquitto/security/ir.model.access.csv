@@ -1,0 +1,4 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+admin_access_mosquitto_account,admin_access_mosquitto_account,model_mosquitto_account,mqtt_admin_group,1,1,1,1
+admin_access_mosquitto_acl,admin_access_mosquitto_acl,model_mosquitto_acl,mqtt_admin_group,1,1,1,1
+admin_access_mosquitto_topic,admin_access_mosquitto_topic,model_mosquitto_topic,mqtt_admin_group,1,1,1,1
