@@ -22,7 +22,7 @@ class DeviceManagerSettings(models.TransientModel):
                          string='CA File') 
     capath = fields.Text(help='server certificate authority path', 
                          string='CA Path')    
-    cadata =fields.Text(help='server certificate authority data',
+    cadata = fields.Text(help='server certificate authority data',
                         string='CA Data')
 
     def set_params(self):

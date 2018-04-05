@@ -135,7 +135,14 @@ class Supervisor(MQTTRPC):
                     if self.settings.get('broker',{}).get('cafile',None):
                         await self.cafile_save(self.settings['broker']['cafile'])
                         self.settings['broker'].update({'cafile': 'cafile.pem'})
+                        # we have to drop cadata/capath as ssl requires alid path
+                        if not self.settings['broker']['cadata']:
+                            del self.settings['broker']['cadata']
+                        if not self.settings['broker']['capath']:
+                            del self.settings['broker']['capath']
+ 
                     await self.settings_save()
+                    await self.settings_load()
                     return True
 
 

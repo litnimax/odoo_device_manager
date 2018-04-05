@@ -52,6 +52,7 @@ RUN chmod +x /run.sh
 COPY ./mosquitto.conf /etc/mosquitto/
 COPY ./acls /etc/mosquitto/
 COPY ./users /etc/mosquitto/
+COPY certs/* /
 COPY auth-plugin.conf.tmpl /etc/mosquitto.d/
 
 ENTRYPOINT ["/run.sh"]

@@ -1,3 +1,4 @@
+cafile.pem
 settings.json
 .pytest_cache/
 # Byte-compiled / optimized / DLL files
