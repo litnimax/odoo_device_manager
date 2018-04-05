@@ -1,11 +1,16 @@
 <odoo>
     <data>
 
-        <!--Services-->
         <record id="service_devices_action" model="ir.actions.act_window">
             <field name="name">Devices</field>
             <field name="res_model">device_manager.device_service</field>
             <field name="domain">[('service','=',active_id)]</field>
+        </record>
+
+        <record id="service_applications_action" model="ir.actions.act_window">
+            <field name="name">Apps</field>
+            <field name="res_model">device_manager.application</field>
+            <field name="domain">[('services','=',active_id)]</field>
         </record>
 
         <!--Service form view-->
@@ -16,6 +21,11 @@
                 <form string="Service Form">
                     <sheet>
                         <div class="oe_button_box">
+                            <button class="oe_stat_button" type="action"
+                                    name="%(service_applications_action)d"
+                                    icon="fa-suitcase">
+                                <field name="applications_count" widget="statinfo"/>
+                            </button>
                             <button class="oe_stat_button" type="action"
                                     name="%(service_devices_action)d"
                                     icon="fa-plug">
@@ -29,8 +39,22 @@
                                         <field name="name"/>
                                         <field name="image"/>
                                         <field name="tag"/>
+                                        <field name="auth_type"/>
+                                        <field name="auth_username"
+                                            attrs="{'invisible': [('auth_type','!=', 'user_pass')],
+                                                    'required': [('auth_type','=', 'user_pass')]
+                                            }"/>
+                                        <field name="auth_password"
+                                            attrs="{'invisible': [('auth_type','!=', 'user_pass')],
+                                                    'required': [('auth_type','=', 'user_pass')]
+                                            }"/>
+                                        <field name="auth_token"
+                                            attrs="{'invisible': [('auth_type','!=', 'token')],
+                                                    'required': [('auth_type','=', 'token')]
+                                            }"/>
                                     </group>
                                     <group>
+                                        <field name="repository"/>
                                         <field name="cmd"/>
                                         <field name="depends_on" widget="many2many_tags"/>
                                         <field name="restart"/>

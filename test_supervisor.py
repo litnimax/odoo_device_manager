@@ -7,19 +7,29 @@ CONTAINER_ID = os.environ.get('CONTAINER_ID')
 test_app = {
     'services': {
         '1': {
-            'Name': 'busybox',
-            'Image': 'busybox',
-            'Cmd': '["echo", "hello"]',
-            'Environment': [],
-            'Tag': 'latest',
             'id': 1,
+            'name': 'busybox',
+            'image': {
+                'name': 'busybox:latest',
+            },
+            'container': {
+                'Image': 'busybox:latest',
+                'Cmd': '["echo", "hello"]',
+                'Environment': [],
+            },            
             'container_id': CONTAINER_ID,
         },
         '2': {
-            'Image': 'nginx:latest',
+            'image': {
+                'name': 'nginx:latest',
+                'repository': 'registry.hub.docker.com/library/'
+            },
             'id': 2,
-            'Env': ['GW_REGION=EU', 'GW_CONTACT_EMAIL=test@mail.com', 'GW_TYPE=rpi'],
-            'Name': 'nginx'
+            'container': {
+                'Image': 'nginx:latest',
+                'Env': ['GW_REGION=EU', 'GW_CONTACT_EMAIL=test@mail.com',
+                        'GW_TYPE=rpi']},
+            'name': 'nginx'
         }
     }
 }
@@ -30,9 +40,9 @@ async def test_service_restart(event_loop):
     s = Supervisor(loop=event_loop)
     s.application = test_app
     await s.service_start(service_id=2)
-    res = await s.service_restart(service_id=2)
-    assert res
+    res = await s.service_restart(service_id=2)    
     await s.stop()
+    assert res
 
 
 @pytest.mark.asyncio

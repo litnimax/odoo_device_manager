@@ -208,10 +208,12 @@ class Supervisor(MQTTRPC):
     @dispatcher.public
     async def service_restart(self, service_id=None):
         if await self.service_status_(service_id) == 'running':
+            logger.debug('Restarting service {}'.format(service_id))
             await self.service_stop_(service_id)
             await self.service_start_(service_id)
             return True
         else:
+            logger.warning('Service {} not running'.format(service_id))
             return False
 
     @dispatcher.public
@@ -228,16 +230,27 @@ class Supervisor(MQTTRPC):
             service = self.application['services'][service_id]
             if not service.get('image_pulled'):
                 logger.debug('Image pull started')
-                image = await docker.images.pull(from_image=service['Image'])
+                auth = service['image'].get('auth')
+                repository = service['image']['repository'] + \
+                    service['image']['name'] if \
+                        service['image'].get('repository') else \
+                            service['image']['name']
+                if auth:
+                    logger.debug('Pulling {} with auth {}'.format(
+                                                            repository, auth))                    
+                    image = await docker.images.pull(repository, auth=auth)
+                else:
+                    logger.debug('Pulling {}'.format(repository))
+                    image = await docker.images.pull(repository)
                 logger.debug('Image pull ended')
                 service['image_pulled'] = True
-            logger.debug('Start service: {}'.format(service['Name']))
+            logger.debug('Start service: {}'.format(service['name']))
             container = await docker.containers.create_or_replace(
-                name=service['Name'], config=service)
+                name=service['name'], config=service['container'])
             self.application['services'][service_id][
                 'container_id'] = container._id
             logger.debug('service started ({}): container {}'.format(
-                service['Name'], container._id))
+                service['name'], container._id))
             await container.start()
             return True
         except IndexError as e:
@@ -258,10 +271,10 @@ class Supervisor(MQTTRPC):
         docker = Docker()
         try:
             service = self.application['services'][service_id]
-            logger.debug('Stop service: {}'.format(service['Name']))
+            logger.debug('Stop service: {}'.format(service['name']))
             if not self.application['services'][service_id].get('container_id'):
                 logger.warning(
-                    'service stopped ({}): no container'.format(service['Name']))
+                    'service stopped ({}): no container'.format(service['name']))
                 return 'no container'
             container = await docker.containers.get(
                 self.application['services'][service_id]['container_id'])
@@ -283,7 +296,7 @@ class Supervisor(MQTTRPC):
         begin = self.loop.time()
         try:
             logger.debug('Service status for {}'.format(
-                self.application['services'][service_id]['Name']))
+                self.application['services'][service_id]['name']))
             if not self.application['services'][service_id].get('container_id'):
                 return 'starting'
             container = await docker.containers.get(
