@@ -344,7 +344,7 @@ class Supervisor(MQTTRPC):
                 settings = json.loads(await file.read())
                 logger.debug('Loaded {}'.format(settings))
                 self.settings = settings.copy()
-                self.config['broker'] = self.settings['broker']
+                self.config['broker'] = self.settings.get('broker')
                 return True
         except FileNotFoundError:
             logger.info('settings.json not found')
