@@ -332,3 +332,12 @@ class DeviceEnvironment(models.Model):
         )
     ]
 
+
+    @api.multi
+    def write(self, vals):
+        res = super(DeviceEnvironment, self).write(vals)
+        if res:
+            for self in self:
+                self.device.application_restart(one_way=True)
+        return res
+

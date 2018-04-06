@@ -47,7 +47,6 @@ class Service(models.Model):
             [('service', '=', self.id)])
 
     @api.one
-
     def _get_applications_count(self):
         self.applications_count = self.env[
             'device_manager.application'].search_count(
@@ -88,10 +87,25 @@ class ServicePort(models.Model):
                                 default='tcp', required=True)
 
 
-class DeviceEnvironment(models.Model):
+
+class ServiceEnvironment(models.Model):
     _name = 'device_manager.service_environment'
     _order = 'name'
 
     name = fields.Char(required=True)
     value = fields.Char()
+    services = fields.Many2many('device_manager.service')
+
+
+    @api.multi
+    def write(self, vals):
+        res = super(ServiceEnvironment, self).write(vals)
+        if res:
+            for self in self:
+                if self.services:
+                    for service in self.services:
+                        for device_service in service.devices:
+                            device_service.device.application_restart(
+                                                                one_way=True)
+        return res
 
