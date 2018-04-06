@@ -13,6 +13,7 @@ import secrets
 import string
 import time
 import sys
+import uuid
 from aiodocker import Docker
 from mqttrpc import MQTTRPC, OdooRPCProxy, dispatcher
 from tinyrpc.exc import RPCError
@@ -41,6 +42,8 @@ class Supervisor(MQTTRPC):
 
 
     def __init__(self, *args, **kwargs):
+        client_uid = os.environ.get('CLIENT_UID', 's{}'.format(
+                                                        str(uuid.getnode())))        
         will_params = {
             'state': 'offline'
         }
@@ -50,7 +53,8 @@ class Supervisor(MQTTRPC):
             'qos': 0x02,
             'retain': False,
         })
-        super().__init__(*args, config=self.config, **kwargs)        
+        super().__init__(*args, config=self.config, client_uid=client_uid,
+                                                                **kwargs)        
         self.odoo = OdooRPCProxy(self, 'odoo')
 
 
@@ -230,7 +234,8 @@ class Supervisor(MQTTRPC):
         else:
             return await self.service_start_(service_id)
 
-    async def service_start_(self, service_id):
+
+    async def service_pull_(self, service_id):
         service_id = str(service_id)
         docker = Docker()
         try:
@@ -238,19 +243,27 @@ class Supervisor(MQTTRPC):
             if not service.get('image_pulled'):
                 logger.debug('Image pull started')
                 auth = service['image'].get('auth')
-                repository = service['image']['repository'] + \
-                    service['image']['name'] if \
-                        service['image'].get('repository') else \
-                            service['image']['name']
+                name = service['image'].get('name')
                 if auth:
                     logger.debug('Pulling {} with auth {}'.format(
-                                                            repository, auth))                    
-                    image = await docker.images.pull(repository, auth=auth)
+                                                            name, auth))                    
+                    image = await docker.images.pull(name, auth=auth)
                 else:
-                    logger.debug('Pulling {}'.format(repository))
-                    image = await docker.images.pull(repository)
+                    logger.debug('Pulling {}'.format(name))
+                    image = await docker.images.pull(name)
                 logger.debug('Image pull ended')
                 service['image_pulled'] = True
+                return True
+        finally:
+            await docker.close()
+
+
+    async def service_start_(self, service_id):
+        service_id = str(service_id)
+        service = self.application['services'][service_id]
+        docker = Docker()
+        try:
+            await self.service_pull_(service_id)
             logger.debug('Start service: {}'.format(service['name']))
             container = await docker.containers.create_or_replace(
                 name=service['name'], config=service['container'])

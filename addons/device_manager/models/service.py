@@ -56,10 +56,11 @@ class Service(models.Model):
 
     @api.constrains('cmd')
     def _check_cmd(self):
-        try:
-            json.loads(self.cmd)
-        except ValueError:
-            raise ValidationError(_('Cmd must be a json string!'))
+        if self.cmd:
+            try:
+                json.loads(self.cmd)
+            except Exception as e:
+                raise ValidationError(_('Cmd must be a json string!'))
 
 
     @api.multi

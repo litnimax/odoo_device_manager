@@ -137,7 +137,8 @@ class Device(models.Model):
         except ConnectionError:
             raise Warning('Cannot connect to the bridge')
         except RPCError as e:
-            raise Warning('{}'.format(e))
+            logger.exception(e)
+            raise Warning('RPC error: {}'.format(e))
 
 
 
@@ -217,14 +218,21 @@ class DeviceService(models.Model):
         # Now take device env
         env.update(dict([(e.name, e.value) for e in self.device.environment]))
         logger.debug('Service & device env: {}'.format(env))
+
+        image_name = '{}:{}'.format(self.service.image, self.service.tag) if \
+            not self.service.repository else '{}{}:{}'.format(
+                self.service.repository if \
+                    self.service.repository.endswith('/') else \
+                    self.service.repository + '/', self.service.image, 
+                                                    self.service.tag)
         config = {
             'id': self.service.id,
             'name': self.service.name,
             'image': {
-                'name': '{}:{}'.format(self.service.image, self.service.tag),
+                'name': image_name,
                 },
             'container': {
-                'Image': '{}:{}'.format(self.service.image, self.service.tag),
+                'Image': image_name,
                 'Env': ['{}={}'.format(k,v) for k,v in env.items()]
                 },
             }
@@ -235,14 +243,8 @@ class DeviceService(models.Model):
                 'password': self.service.auth_password,
             }
         elif self.service.auth_type == 'token':
-            config['image']['auth'] = self.service.auth_token
-        # Set repository address if present
-        if self.service.repository:
-            config['image'].update({
-                'repository': self.service.repository if \
-                    self.service.repository.endswith('/') else \
-                        self.service.repository + '/'
-            })
+            config['image']['auth'] = {'identitytoken': self.service.auth_token}
+
         for p in self.device.ports:
             config['container'].update({
                 'PortBindings': {
