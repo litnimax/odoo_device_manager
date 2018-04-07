@@ -297,9 +297,20 @@ class DeviceLog(models.Model):
     _name = 'device_manager.device_log'
     _order = 'create_date desc'
 
+    _rec_name = 'device'
+
     device = fields.Many2one(comodel_name='device_manager.device')
     service = fields.Many2one('device_manager.service')
     log = fields.Char()
+    log_short = fields.Char(compute='_log_short', string='Log')
+
+
+    @api.one
+    def _log_short(self):
+        if len(self.log) > 100:
+            self.log_short = "{}{}".format(self.log[:100], "...")
+        else:
+            self.log_short = self.log
 
 
 class DevicePort(models.Model):

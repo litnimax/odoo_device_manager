@@ -3,6 +3,24 @@
     <data>
         <!--Logs-->
 
+        <record model="ir.ui.view" id="device_log_form_view">
+            <field name="name">device_log.form</field>
+            <field name="model">device_manager.device_log</field>
+            <field name="arch" type="xml">
+                <form string="Device Log Form" edit="false" create="false" delete="false">
+                    <sheet>
+                        <group>
+                            <group>
+                                <field name="device"/>
+                                <field name="service"/>
+                                <field name="log"/>
+                            </group>
+                        </group>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
         <!--Logs tree view-->
         <record model="ir.ui.view" id="device_log_tree_view">
             <field name="name">device_log.tree</field>
@@ -11,7 +29,7 @@
                 <tree string="Logs Tree" create="false">
                     <field name="device"/>
                     <field name="service"/>
-                    <field name="log"/>
+                    <field name="log_short"/>
                 </tree>
             </field>
         </record>
@@ -34,7 +52,7 @@
             <field name="name">Logs</field>
             <field name="res_model">device_manager.device_log</field>
             <field name="view_type">form</field>
-            <field name="view_mode">tree,search</field>
+            <field name="view_mode">tree,form,search</field>
         </record>
     </data>
 </odoo>
