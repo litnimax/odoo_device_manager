@@ -16,7 +16,7 @@ RUN buildDeps='git postgresql-dev build-base libressl-dev libwebsockets-dev c-ar
     touch /var/lib/mosquitto/.keep && \
     mkdir -p /etc/mosquitto.d && \
     apk update && \
-    apk add $buildDeps hiredis libwebsockets libuuid c-ares libpq libressl curl ca-certificates && \
+    apk add $buildDeps postgresql-client hiredis libwebsockets libuuid c-ares libpq libressl curl ca-certificates && \
     git clone https://github.com/eclipse/mosquitto.git && \
     cd mosquitto && \
     git checkout ${MOSQUITTO_VERSION} -b ${MOSQUITTO_VERSION} && \
