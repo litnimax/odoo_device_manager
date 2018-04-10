@@ -377,9 +377,13 @@ class Supervisor(MQTTRPC):
             async with async_timeout.timeout(10):
                 async with aiohttp.ClientSession() as session:
                     async with session.get(update_url) as resp:
-                        body = await resp.text()
-                        logger.debug('Got update script:\n{}'.format(body))
-                        return body
+                        logger.debug('Response: {}'.format(resp.status))
+                        if resp.status == '200':
+                            body = await resp.text()
+                            logger.debug('Got update script:\n{}'.format(body))
+                            return body
+                        else:                            
+                            raise RPCError('Bad status')
         script_body = await get_script(update_url)
         async with aiofiles.open(os.path.join(
                                     os.path.dirname(__file__),
