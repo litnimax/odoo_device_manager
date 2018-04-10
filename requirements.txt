@@ -1,5 +1,6 @@
 aiodocker
 aiojobs
 aiofiles
+async-timeout
 git+https://github.com/strufkin/hbmqtt.git
 git+https://github.com/litnimax/python-mqttrpc.git

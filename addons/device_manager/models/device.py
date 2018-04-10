@@ -189,6 +189,19 @@ class Device(models.Model):
         return result
 
 
+    @api.multi
+    def supervisor_update(self):
+        self.ensure_one()
+        update_url = self.env['device_manager.settings']._get_param(
+                                                    'supervisor_update_url')
+        try:
+            mqtt_rpc_bridge = MqttRpcBridge(self, one_way=True)
+            result = mqtt_rpc_bridge.supervisor_update(dst=self.uid,
+                                                       update_url=update_url)
+        except (ConnectionError, RPCError) as e:
+            logger.exception(e)
+            raise Warning('Error: {}'.format(e))
+
 
 class DeviceService(models.Model):
     _name = 'device_manager.device_service'

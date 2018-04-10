@@ -23,6 +23,11 @@
                             <field name="cadata"/>
                         </group>
                     </group>
+                    <group>
+                        <group>
+                            <field name="supervisor_update_url"/>
+                        </group>
+                    </group>
             </form>
         </field>
     </record>

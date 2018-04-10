@@ -7,7 +7,7 @@ from odoo.exceptions import ValidationError, Warning
 logger = logging.getLogger(__name__)
 
 PARAMS = ['mqtt_host', 'mqtt_port', 'mqtt_rpc_bridge_url',
-          'cafile', 'capath', 'cadata']
+          'cafile', 'capath', 'cadata',  'supervisor_update_url',]
 
 class DeviceManagerSettings(models.TransientModel):
     _inherit = 'res.config.settings'
@@ -24,6 +24,7 @@ class DeviceManagerSettings(models.TransientModel):
                          string='CA Path')    
     cadata = fields.Text(help='server certificate authority data',
                         string='CA Data')
+    supervisor_update_url = fields.Char(string='Supervisor update URL')
 
     def set_params(self):
         for field_name in PARAMS:

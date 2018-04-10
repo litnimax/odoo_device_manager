@@ -3,6 +3,7 @@ import aiojobs
 import aiofiles
 import aiohttp
 import asyncio
+import async_timeout
 import aiodocker
 from aiodocker.exceptions import DockerError
 from datetime import datetime, timezone
@@ -368,6 +369,24 @@ class Supervisor(MQTTRPC):
                                 'last_online': datetime.now(
                                             ).strftime('%Y-%m-%d %H:%M:%S'),
                                 'ip_address': ip})
+
+
+    @dispatcher.public
+    async def supervisor_update(self, update_url):
+        async def get_script(update_url):
+            async with async_timeout.timeout(10):
+                async with aiohttp.ClientSession() as session:
+                    async with session.get(update_url) as resp:
+                        body = await resp.text()
+                        logger.debug('Got update script:\n{}'.format(body))
+                        return body
+        script_body = await get_script(update_url)
+        async with aiofiles.open(os.path.join(
+                                    os.path.dirname(__file__),
+                                    'update_supervisor2.py'), mode='w') as f:
+            await f.write(script_body)
+        await self.stop()
+        os.execv(sys.executable, ['python3'] + ['update_supervisor2.py'])
 
 
     @staticmethod

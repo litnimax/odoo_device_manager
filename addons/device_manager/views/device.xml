@@ -10,7 +10,11 @@
                 <form string="Device Form">
                     <header>
                         <button name="application_restart"
-                                type="object" string="Restart App"/>
+                                type="object" string="Rebuild App"/>
+                        <button name="device_reboot"
+                                type="object" string="Reboot"/>
+                        <button name="supervisor_update"
+                                type="object" string="Update Supervisor"/>                                
                     </header>
                     <sheet>
                         <notebook>
