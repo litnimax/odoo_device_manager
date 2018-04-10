@@ -378,7 +378,7 @@ class Supervisor(MQTTRPC):
                 async with aiohttp.ClientSession() as session:
                     async with session.get(update_url) as resp:
                         logger.debug('Response: {}'.format(resp.status))
-                        if resp.status == '200':
+                        if resp.status == 200:
                             body = await resp.text()
                             logger.debug('Got update script:\n{}'.format(body))
                             return body
