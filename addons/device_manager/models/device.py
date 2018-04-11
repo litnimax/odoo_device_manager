@@ -206,6 +206,8 @@ class Device(models.Model):
 class DeviceService(models.Model):
     _name = 'device_manager.device_service'
 
+    _rec_name = "service_name"
+
     device = fields.Many2one(comodel_name='device_manager.device',
                              ondelete='cascade')
     service = fields.Many2one(comodel_name='device_manager.service',

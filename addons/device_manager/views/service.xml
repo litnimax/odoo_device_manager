@@ -1,9 +1,21 @@
 <odoo>
     <data>
+        <record model="ir.ui.view" id="device_service_tree_view">
+            <field name="name">service.tree</field>
+            <field name="model">device_manager.device_service</field>
+            <field name="arch" type="xml">
+                <tree string="Device service Tree">
+                    <field name="device"/>
+                    <field name="status"/>
+                </tree>
+            </field>
+        </record>
 
         <record id="service_devices_action" model="ir.actions.act_window">
             <field name="name">Devices</field>
             <field name="res_model">device_manager.device_service</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form</field>
             <field name="domain">[('service','=',active_id)]</field>
         </record>
 
