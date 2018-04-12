@@ -4,7 +4,6 @@ import aiofiles
 import aiohttp
 import asyncio
 import async_timeout
-import aiodocker
 from aiodocker.exceptions import DockerError
 from datetime import datetime, timezone
 import json
@@ -12,7 +11,6 @@ import logging
 import os
 import secrets
 import string
-import time
 import sys
 import uuid
 from aiodocker import Docker
@@ -104,7 +102,6 @@ class Supervisor(MQTTRPC):
         logger.debug('Device log since {} : {}'.format(self.last_logs, log))
         try:
             await self.odoo.create('device_manager.device_log', {
-                'device': self.settings['device_id'],
                 'log': log,
                 'service': service_id,
             })

@@ -314,11 +314,14 @@ class DeviceLog(models.Model):
 
     _rec_name = 'device'
 
-    device = fields.Many2one(comodel_name='device_manager.device')
+    device = fields.Many2one(comodel_name='device_manager.device', default=lambda self: self._get_default_user())
     service = fields.Many2one('device_manager.service')
     log = fields.Char()
     log_short = fields.Char(compute='_log_short', string='Log')
 
+    @api.model
+    def _get_default_user(self):
+        return self.env.user.device
 
     @api.one
     def _log_short(self):
