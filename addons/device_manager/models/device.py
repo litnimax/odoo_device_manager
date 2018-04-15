@@ -8,6 +8,7 @@ from .utils import MqttRpcBridge
 
 logger = logging.getLogger(__name__)
 
+
 class Device(models.Model):
     _name = 'device_manager.device'
     _inherits = {
@@ -214,6 +215,8 @@ class DeviceService(models.Model):
                               ondelete='cascade')
     service_name = fields.Char(related='service.name', readonly=True)
     status = fields.Char(compute='status_get')
+    image_info = fields.Char(readonly=True)
+    container_info = fields.Char(readonly=True)
 
     _sql_constraints = [
         (
@@ -222,6 +225,14 @@ class DeviceService(models.Model):
             _(u'This device already has this service!')
         )
     ]
+
+    @api.one
+    def image_info_update(self):
+        pass
+
+    @api.one
+    def container_info_update(self):
+        pass
 
     @api.one
     def service_get(self):
@@ -236,10 +247,9 @@ class DeviceService(models.Model):
 
         image_name = '{}:{}'.format(self.service.image, self.service.tag) if \
             not self.service.repository else '{}{}:{}'.format(
-                self.service.repository if \
-                    self.service.repository.endswith('/') else \
-                    self.service.repository + '/', self.service.image, 
-                                                    self.service.tag)
+                self.service.repository
+                if self.service.repository.endswith('/')
+                else self.service.repository + '/', self.service.image, self.service.tag)
         config = {
             'id': self.service.id,
             'name': self.service.name,
@@ -275,8 +285,8 @@ class DeviceService(models.Model):
         try:
             mqtt_rpc_bridge = MqttRpcBridge(self)
             self.status = mqtt_rpc_bridge.service_status(dst=self.device.uid,
-                                                     timeout=2,
-                                                     service_id=self.service.id)
+                                                         timeout=2,
+                                                         service_id=self.service.id)
         except (RPCError, ConnectionError):
             self.status = 'error'
 
@@ -285,16 +295,18 @@ class DeviceService(models.Model):
     def start(self):
         try:
             mqtt_rpc_bridge = MqttRpcBridge(self)
-            mqtt_rpc_bridge.service_start(dst=self.device.uid, timeout=30,
-                                      service_id=self.service.id)
+            mqtt_rpc_bridge.service_start(dst=self.device.uid,
+                                          timeout=30,
+                                          service_id=self.service.id)
         except RPCError as e:
             raise Warning(str(e))
 
     @api.one
     def stop(self):
         try:
-            mqtt_rpc_bridge.service_stop(dst=self.device.uid, timeout=30,
-                                     service_id=self.service.id)
+            mqtt_rpc_bridge.service_stop(dst=self.device.uid,
+                                         timeout=30,
+                                         service_id=self.service.id)
         except RPCError as e:
             raise Warning(str(e))
 
@@ -302,8 +314,9 @@ class DeviceService(models.Model):
     def restart(self):
         try:
             mqtt_rpc_bridge = MqttRpcBridge(self)
-            mqtt_rpc_bridge.service_restart(dst=self.device.uid, timeout=60,
-                                        service_id=self.service.id)
+            mqtt_rpc_bridge.service_restart(dst=self.device.uid,
+                                            timeout=60,
+                                            service_id=self.service.id)
         except RPCError as e:
             raise Warning(str(e))
 

@@ -47,18 +47,40 @@
                                         <button icon="fa-square" type="object"
                                                 name="stop" help="Stop"/>
                                     </tree>
-                                    <form>
+                                    <form string="kke">
                                         <sheet>
-                                            <group>
-                                                <group>
-                                                    <field name="service"/>
-                                                    <field name="device"/>
-                                                </group>
-                                                <group>
-                                                    <field name="service_name"/>
-                                                    <field name="status"/>
-                                                </group>
-                                            </group>
+                                            <notebook>
+                                                <page string="General info">
+                                                    <group>
+                                                        <group>
+                                                            <field name="service"/>
+                                                            <field name="device"/>
+                                                        </group>
+                                                        <group>
+                                                            <field name="service_name"/>
+                                                            <field name="status"/>
+                                                        </group>
+                                                    </group>
+                                                </page>
+                                                <page string="Image info">
+                                                    <group>
+                                                        <button class="oe_stat_button" name="image_info_update"
+                                                            type="object" string="Update Image info" icon="fa-refresh"/>
+                                                    </group>
+                                                    <group>
+                                                        <field string="Image info" name="image_info"/>
+                                                    </group>
+                                                </page>
+                                                <page string="Container info">
+                                                    <group>
+                                                        <button class="oe_stat_button" name="container_info_update"
+                                                            type="object" string="Update Container info" icon="fa-refresh"/>
+                                                    </group>
+                                                    <group>
+                                                        <field string="Container info" name="container_info"/>
+                                                    </group>
+                                                </page>
+                                            </notebook>
                                         </sheet>
                                     </form>
                                 </field>
