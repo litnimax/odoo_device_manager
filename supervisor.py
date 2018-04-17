@@ -407,6 +407,13 @@ class Supervisor(MQTTRPC):
             await file.write(cafile_data)
             return True
 
+    async def image_info(self, image_name, tag):
+        docker = Docker()
+        image_name = "".join([image_name, ':', tag])
+        kek = await docker.images.get(image_name)
+        await docker.close()
+        return json.dumps(kek, sort_keys=True, indent=4)
+
 
 if __name__ == '__main__':
     logging.basicConfig(level=logging.DEBUG)

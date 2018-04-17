@@ -228,7 +228,14 @@ class DeviceService(models.Model):
 
     @api.one
     def image_info_update(self):
-        pass
+        try:
+            mqtt_rpc_bridge = MqttRpcBridge(self)
+            self.image_info = mqtt_rpc_bridge.image_info(self.service.image, self.service.tag)
+        except ConnectionError:
+            raise Warning('Cannot connect to the bridge')
+        except RPCError as e:
+            logger.exception(e)
+            raise Warning('RPC error: {}'.format(e))
 
     @api.one
     def container_info_update(self):
