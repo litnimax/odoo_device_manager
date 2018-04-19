@@ -1,6 +1,6 @@
 import os
 import pytest
-from supervisor import Supervisor
+from supervisor import Supervisor, ODOO_DB
 
 CONTAINER_ID = os.environ.get('CONTAINER_ID')
 
@@ -35,14 +35,37 @@ test_app = {
 }
 
 
+# @pytest.mark.asyncio
+# async def test_application_load(event_loop):
+#     pass
+
+
+# @pytest.mark.asyncio
+# async def test_application_start_(event_loop):
+#     s = Supervisor(loop=event_loop)
+#     s.application = test_app
+#     res = await s.application_start_()
+#     assert res
+#     await s.stop()
+
+
+@pytest.mark.asyncio
+async def test_device_register(event_loop):
+    s = Supervisor(loop=event_loop)
+    s.application = test_app
+    res = await s.device_register()
+    assert res
+    await s.stop()
+
+
 @pytest.mark.asyncio
 async def test_service_restart(event_loop):
     s = Supervisor(loop=event_loop)
     s.application = test_app
     await s.service_start(service_id=2)
-    res = await s.service_restart(service_id=2)    
-    await s.stop()
+    res = await s.service_restart(service_id=2)
     assert res
+    await s.stop()
 
 
 @pytest.mark.asyncio
@@ -50,6 +73,15 @@ async def test_service_start(event_loop):
     s = Supervisor(loop=event_loop)
     s.application = test_app
     res = await s.service_start(service_id=2)
+    assert res
+    await s.stop()
+
+
+@pytest.mark.asyncio
+async def test_service_pull_(event_loop):
+    s = Supervisor(loop=event_loop)
+    s.application = test_app
+    res = await s.service_pull_(service_id=1)
     assert res
     await s.stop()
 
