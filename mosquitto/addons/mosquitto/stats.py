@@ -1,5 +1,5 @@
 from odoo import models, fields, api
 
-class SysStats(model.Model):
+class SysStats(models.Model):
 
     metric = fields.Char(required=True)
